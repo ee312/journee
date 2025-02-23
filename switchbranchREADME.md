@@ -1,3 +1,5 @@
+**to pull all changes from MAIN into <YOUR BRANCH>, make sure to do <ins>"git pull origin main"<ins>
+
 <ins>Assumptions:<ins>
 1. you're checked into your branch
 2. you are in VSCode
