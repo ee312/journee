@@ -19,4 +19,4 @@
 5. create pull request
 
 <ins>Approving merge into main (through GitHub):<ins>
-1. two people in team need to approve merge into main before merge happens. **One of these must be the teammate on your stack.**
+1. one person in team need to approve merge into main before merge happens. **this person must be the teammate on your stack.**
