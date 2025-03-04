@@ -1,3 +1,5 @@
+# google places API
+
 # to find nearby activities: 
 
 # find place from text request (w/ user inputted city): 

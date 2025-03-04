@@ -1,5 +1,5 @@
-Flask
-pymongo[srv]
-Flask-PyMongo
-Flask-Cors
-surprise
+Flask (backend)
+pymongo[srv] <- connect flask to mongoDB atlas
+Flask-PyMongo <- help with mongoDB integration
+Flask-Cors <- if the front end and back end are running on different origins
+surprise (AI)
