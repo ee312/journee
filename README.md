@@ -1,4 +1,4 @@
-# journee
+# Journee Itinerary Planner
 
 Planning trips can be very stressful and time-consuming because there is just so much research involved. This project makes travel planning effortless by using AI to create custom itineraries that match the users’ unique needs, preferences, and budget. It will make travel easier and more enjoyable. 
 
