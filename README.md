@@ -4,10 +4,14 @@ Planning trips can be very stressful and time-consuming because there is just so
 
 For our tech stack, we use React.js for our front-end, Flask for our back-end, and MongoDB for our database. We use a travel API, Google Places API, which includes food, stay, and things to do. We use this along with Surprise Library, our AI model of choice.
 
+---
+
 # how our project works
 We use a three-tier, event-driven architecture, using Celery as our queue, and WebSockets for the front-end event listener. We also use dot_env to secure our MonogDB URI.
 
 A little bit about how our project is structured: 
+
+
 
 **Front-end (top tier)**
 
@@ -19,7 +23,6 @@ A little bit about how our project is structured:
 
 * Displays final itinerary on user page 
 
- 
 
 **Back-end Mediator (middle tier)**
 
