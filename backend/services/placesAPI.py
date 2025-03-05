@@ -1,4 +1,4 @@
-# google places API
+# google places API service
 
 # to find nearby activities: 
 
