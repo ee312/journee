@@ -39,7 +39,7 @@ A little bit about how our project is structured:
 
 **Data Tier (bottom tier)**
 
-*Fetch data  
+* Fetch data  
 
   * Google Places API 
 
