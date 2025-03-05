@@ -9,7 +9,7 @@ We use a three-tier, event-driven architecture, using Celery as our queue, and W
 
 A little bit about how our project is structured: 
 
-** Front-end (top tier) **
+**Front-end (top tier)**
 
 * Queues request, on client side 
 
@@ -21,7 +21,7 @@ A little bit about how our project is structured:
 
  
 
-** Back-end Mediator (middle tier) **
+**Back-end Mediator (middle tier)**
 
 * Accepts incoming requests from queue 
 
@@ -37,7 +37,7 @@ A little bit about how our project is structured:
 
  
 
-** Data Tier (bottom tier) **
+**Data Tier (bottom tier)**
 
 *Fetch data  
 
