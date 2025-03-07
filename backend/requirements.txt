@@ -2,3 +2,8 @@ Flask
 pymongo[srv]
 Flask-PyMongo
 Flask-Cors
+surprise
+Flask-SocketIO
+celery
+redis
+python-dotenv
