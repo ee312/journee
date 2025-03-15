@@ -1,5 +1,5 @@
 
-from Flask import Blueprint, request, render_template, redirect, session
+from Flask import Blueprint, request, jsonify, session
 from flask_pymongo import PyMongo
 
 # use blueprint to make routes modular
@@ -12,7 +12,7 @@ mongo = None
 def userpage():
     # if user not logged in, redirect to login page
     if "user_id" not in session:
-        return redirect("/login")
+        return jsonify({"message": "log in"}), 201
     
     # get all of the user's data
     userData = mongo.db.users.find_one({"_id": session["user_id"]})

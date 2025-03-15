@@ -15,4 +15,15 @@
 # 
 #   https://maps.googleapis.com/maps/api/place/nearbysearch/output?parameters 
 #   must specify location (lat/long), radius
-#   
+#  
+
+import requests
+
+api_key = 
+base_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+
+# input parameters into variable called "params"
+
+response = requests.get(base_url, params=params)
+data = response.json()
+
