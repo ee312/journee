@@ -57,18 +57,18 @@ const Profile = ({ user, setUser }) => {
     }
   });
   
-  // const interestOptions = [
-  //   'Art & Culture',
-  //   'Food & Dining',
-  //   'Nature & Outdoors',
-  //   'History & Heritage',
-  //   'Shopping',
-  //   'Adventure & Sports',
-  //   'Relaxation & Wellness',
-  //   'Nightlife & Entertainment',
-  //   'Family Friendly',
-  //   'Local Experiences',
-  // ];
+  const interestOptions = [
+    'Art & Culture',
+    'Food & Dining',
+    'Nature & Outdoors',
+    'History & Heritage',
+    'Shopping',
+    'Adventure & Sports',
+    'Relaxation & Wellness',
+    'Nightlife & Entertainment',
+    'Family Friendly',
+    'Local Experiences',
+  ];
 
   useEffect(() => {
     setFormData({
@@ -104,27 +104,27 @@ const Profile = ({ user, setUser }) => {
     }
   };
   
-  // const handleInterestChange = (interest) => {
-  //   const currentInterests = [...formData.preferences.interests];
-  //   if (currentInterests.includes(interest)) {
-  //     const updatedInterests = currentInterests.filter(item => item !== interest);
-  //     setFormData({
-  //       ...formData,
-  //       preferences: {
-  //         ...formData.preferences,
-  //         interests: updatedInterests
-  //       }
-  //     });
-  //   } else {
-  //     setFormData({
-  //       ...formData,
-  //       preferences: {
-  //         ...formData.preferences,
-  //         interests: [...currentInterests, interest]
-  //       }
-  //     });
-  //   }
-  // };
+  const handleInterestChange = (interest) => {
+    const currentInterests = [...formData.preferences.interests];
+    if (currentInterests.includes(interest)) {
+      const updatedInterests = currentInterests.filter(item => item !== interest);
+      setFormData({
+        ...formData,
+        preferences: {
+          ...formData.preferences,
+          interests: updatedInterests
+        }
+      });
+    } else {
+      setFormData({
+        ...formData,
+        preferences: {
+          ...formData.preferences,
+          interests: [...currentInterests, interest]
+        }
+      });
+    }
+  };
   
   const handleSubmit = (e) => {
     e.preventDefault();
