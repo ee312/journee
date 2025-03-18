@@ -20,10 +20,14 @@
 import json
 import requests # type: ignore
 import urllib.parse
+import os
+from dotenv import load_dotenv # type: ignore
 
-api_key = "AIzaSyCfS2LH0L2Phby2jXEwwnh57PRjWATdYR0"
+load_dotenv()
+
+api_key = os.getenv("GOOGLE_MAPS_API_KEY")
 base_url = "https://maps.googleapis.com/maps/api/place"
-
+    
 def findNearbyPlacesByCoor(lat, long, radius, kwargs = {}): 
     coor = ','.join([lat.decode(), long.decode()])
     # print(coor)
@@ -68,5 +72,5 @@ def prettyJSON(response):
     return json.dumps(response.json(), indent=4)
     
 if __name__ == "__main__":
-    # print(prettyJSON(_getGeoDetails("paris")))
-    print(prettyJSON(findNearbyPlacesByName("paris", 50)))
+    print(prettyJSON(_getGeoDetails("paris")))
+    # print(prettyJSON(findNearbyPlacesByName("paris", 50)))
