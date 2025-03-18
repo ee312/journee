@@ -61,7 +61,7 @@ const Register = ({ onLogin }) => {
         // Call the onLogin function passed from the App component
         onLogin(userData, token);
         
-        // Redirect to dashboard
+        // redirect to dashboard
         navigate('/dashboard');
         
         setIsLoading(false);

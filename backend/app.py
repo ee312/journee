@@ -1,5 +1,7 @@
 # MAIN PYTHON FILE
 
+# make sure you install pyjwt: pip install pyjwt
+
 # imports
 from flask import Flask, render_template
 from flask_cors import CORS
