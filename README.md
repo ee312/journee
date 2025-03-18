@@ -7,34 +7,33 @@ For our tech stack, we use React.js for our front-end, Flask for our back-end, a
 ---
 
 # how our project works
-We use a three-tier, event-driven architecture, using Celery as our queue, and WebSockets for the front-end event listener. We also use dot_env to secure our MonogDB URI.
+We use a three-tier architecture. We also use dot_env to secure our MonogDB URI, and some security imports as well for password security.
 
 A little bit about how our project is structured: 
 
 
-
 **Front-end (top tier)**
 
-* Queues request, on client side 
+* Sends API request to back-end mediator 
 
-* Sends request one by one to back-end mediator, into a queue 
-
-* Polls or listens indefinitely (maybe via event listener or other) for generated itinerary 
+* Uses websocket to update generated itinerary 
 
 * Displays final itinerary on user page 
 
 
 **Back-end Mediator (middle tier)**
 
-* Accepts incoming requests from queue 
+* Accepts incoming requests
+ 
+* Handle authentication
 
-* Distributes tasks asynchronously across event channels 
+* Assign each request unique tracking ID
 
-  * fetch data (call API) 
+* fetch data (call API) 
 
-  * incorporate AI (use Surprise to generate trip) 
+* incorporate AI (use Surprise to generate trip) 
 
-  *final assembly (combine all data) 
+*final assembly (combine all data) 
 
 * Return final itinerary back to front-end 
 
