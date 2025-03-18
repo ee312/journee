@@ -1,8 +1,49 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Profile = ({ user, setUser }) => {
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
+
+// andreea added this in!
+
+  // get user data from flask on load
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("log in.");
+      setLoading(false);
+      return;
+    }
+
+    fetch("http://localhost:5000/userpage", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.message) {
+          setError(data.message);
+        } else {
+          // Update user state
+          setUser(data);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("could not get user data.");
+        setLoading(false);
+      });
+  }, [setUser]);
+
+// end of andreea's edit
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -16,29 +57,44 @@ const Profile = ({ user, setUser }) => {
     }
   });
   
-  const interestOptions = [
-    'Art & Culture',
-    'Food & Dining',
-    'Nature & Outdoors',
-    'History & Heritage',
-    'Shopping',
-    'Adventure & Sports',
-    'Relaxation & Wellness',
-    'Nightlife & Entertainment',
-    'Family Friendly',
-    'Local Experiences',
-  ];
+  // const interestOptions = [
+  //   'Art & Culture',
+  //   'Food & Dining',
+  //   'Nature & Outdoors',
+  //   'History & Heritage',
+  //   'Shopping',
+  //   'Adventure & Sports',
+  //   'Relaxation & Wellness',
+  //   'Nightlife & Entertainment',
+  //   'Family Friendly',
+  //   'Local Experiences',
+  // ];
+
+  useEffect(() => {
+    setFormData({
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      bio: user?.bio || "",
+      preferences: {
+        accommodationType: user?.preferences?.accommodationType || "hotel",
+        budget: user?.preferences?.budget || "medium",
+        travelStyle: user?.preferences?.travelStyle || "balanced",
+        interests: user?.preferences?.interests || [],
+      },
+    });
+  }, [user]);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
       setFormData({
         ...formData,
         [parent]: {
           ...formData[parent],
           [child]: value
-        }
+        },
       });
     } else {
       setFormData({
@@ -48,36 +104,50 @@ const Profile = ({ user, setUser }) => {
     }
   };
   
-  const handleInterestChange = (interest) => {
-    const currentInterests = [...formData.preferences.interests];
-    if (currentInterests.includes(interest)) {
-      const updatedInterests = currentInterests.filter(item => item !== interest);
-      setFormData({
-        ...formData,
-        preferences: {
-          ...formData.preferences,
-          interests: updatedInterests
-        }
-      });
-    } else {
-      setFormData({
-        ...formData,
-        preferences: {
-          ...formData.preferences,
-          interests: [...currentInterests, interest]
-        }
-      });
-    }
-  };
+  // const handleInterestChange = (interest) => {
+  //   const currentInterests = [...formData.preferences.interests];
+  //   if (currentInterests.includes(interest)) {
+  //     const updatedInterests = currentInterests.filter(item => item !== interest);
+  //     setFormData({
+  //       ...formData,
+  //       preferences: {
+  //         ...formData.preferences,
+  //         interests: updatedInterests
+  //       }
+  //     });
+  //   } else {
+  //     setFormData({
+  //       ...formData,
+  //       preferences: {
+  //         ...formData.preferences,
+  //         interests: [...currentInterests, interest]
+  //       }
+  //     });
+  //   }
+  // };
   
   const handleSubmit = (e) => {
     e.preventDefault();
-    // send data to API
-    setUser({
-      ...user,
-      ...formData
-    });
-    setIsEditing(false);
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:5000/userpage", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.message === "User updated successfully") {
+          setUser(formData);
+          setIsEditing(false);
+        } else {
+          setError(data.message);
+        }
+      })
+      .catch(() => setError("Failed to update profile."));
   };
   
   return (
