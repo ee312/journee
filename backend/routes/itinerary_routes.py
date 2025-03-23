@@ -1,5 +1,5 @@
 
-from Flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 import jwt
