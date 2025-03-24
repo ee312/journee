@@ -11,7 +11,7 @@
 
 # find nearby places:
 #   documentation: 
-#       https://developers.google.com/maps/documentation/places/web-service/search-nearby
+#       https://developers.google.com/maps/documentation/places/web-service/nearby-search
 # 
 #   https://maps.googleapis.com/maps/api/place/nearbysearch/output?parameters 
 #   must specify location (lat/long), radius
@@ -19,58 +19,65 @@
 
 import json
 import requests # type: ignore
-import urllib.parse
 import os
+from geopy.geocoders import Nominatim # type: ignore
 from dotenv import load_dotenv # type: ignore
 
 load_dotenv()
 
 api_key = os.getenv("GOOGLE_MAPS_API_KEY")
-base_url = "https://maps.googleapis.com/maps/api/place"
+places_url = "https://places.googleapis.com/v1/places:searchNearby"
     
 def findNearbyPlacesByCoor(lat, long, radius, kwargs = {}): 
-    coor = ','.join([lat.decode(), long.decode()])
-    # print(coor)
-    # required input
-    fields = {'location' : coor, 'radius' : radius, 'inputtype' : 'textquery', 'key' : api_key}
-
-    # optional input
-    if kwargs.get('maxprice') != None:
-        fields['maxprice'] = kwargs.get('maxprice')
-    if kwargs.get('minprice') != None:
-        fields['minprice'] = kwargs.get('minprice')
-    if kwargs.get('keyword') != None:
-        fields['keyword'] = kwargs.get('keyword')
-    if kwargs.get('rankby') != None:
-        fields['rankby'] = kwargs.get('rankby')
-    if kwargs.get('type') != None:
-        if kwargs.get('type') != kwargs.get('keyword'):
-            fields['type'] = kwargs.get('type')
-    if kwargs.get('opennow') != None:
-        fields['opennow'] = kwargs.get('opennow')
+    
+    included_types = ["amusement_park", "aquarium", "art_gallery", "bakery", "bar", "book_store", 
+                          "bowling_alley", "cafe", "campground", "casino", "church", "city_hall", 
+                          "clothing_store", "electronics_store", "gym", "hindu_temple", "library", 
+                          "mosque", "movie_theater", "museum", "night_club", "park", 
+                          "shopping_mall", "spa", "stadium", "synagogue", "tourist_attraction", 
+                          "train_station", "university", "zoo"]
+    
+    # excluded_types = ["hospital", "car_dealer", "car_wash", "lawyer", "bank", "accounting", 
+    #                       "dentist", "insurance_agency", "moving_company", "physiotherapist", "primary_school", 
+    #                       "roofing_contractor"]
+    
+    if kwargs.get("includedTypes") != None:
+        included_types = kwargs.get("includedTypes")
+    
+    header = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key, 
+        "X-Goog-FieldMask": "places.displayName,places.rating,places.priceRange,places.types",
+    }
+    
+    req = {
+        "maxResultCount": 20,
+        "locationRestriction": {
+            "circle": {
+                "center": {
+                    "latitude": lat,
+                    "longitude": long
+                }, 
+                "radius": radius,
+            }
+        }, 
+        "includedTypes": included_types
+    }
         
-    req_url = "/nearbysearch/json?" + urllib.parse.urlencode(fields) 
-    print(base_url + req_url)
-    nearby = requests.get(base_url + req_url)
+    nearby = requests.post(places_url, headers=header, json=req)
     return nearby
 
 def findNearbyPlacesByName(place, radius, kwargs = {}): 
-    geo = _getGeoDetails(place).json()
-    print(geo)
-    # TODO: test getting lat/long
-    [lat, long] = geo['candidates'][0]['geometry']['location']['lat'], geo['candidates'][0]['geometry']['location']['lng']
-    return findNearbyPlacesByCoor(lat, long, radius, kwargs)
+    [lat, long] = _getGeoDetails(place)
+    return findNearbyPlacesByCoor(str(lat), str(long), radius, kwargs)
 
 def _getGeoDetails(place):
-    fields = {'fields' : 'geometry', 'input' : place, 'inputtype' : 'textquery', 'key' : api_key}
-    req_url = "/findplacefromtext/json?" + urllib.parse.urlencode(fields)
-    # print(base_url + req_url)
-    geo = requests.get(base_url + req_url)
-    return geo
+    geoloc = Nominatim(user_agent="journee")
+    loc = geoloc.geocode(place)
+    return loc.latitude, loc.longitude
 
 def prettyJSON(response):
     return json.dumps(response.json(), indent=4)
     
 if __name__ == "__main__":
-    print(prettyJSON(_getGeoDetails("paris")))
-    # print(prettyJSON(findNearbyPlacesByName("paris", 50)))
+    print(prettyJSON(findNearbyPlacesByName("dallas", 5000.0)))

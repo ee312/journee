@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "backend/services/placesAPI.py",
+            "console": "integratedTerminal", 
+            "python": "backend/venv/bin/python3" 
+        },
+        {
             "name": "Python Debugger: Flask",
             "type": "debugpy",
             "request": "launch",
