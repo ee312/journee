@@ -7,3 +7,7 @@ Flask-SocketIO
 celery
 redis
 python-dotenv
+requests
+dotenv
+pyjwt
+geopy
