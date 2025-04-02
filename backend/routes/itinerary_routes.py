@@ -6,6 +6,7 @@ import jwt
 import os
 from datetime import datetime, UTC
 from dotenv import load_dotenv
+from services.placesAPI import findNearbyPlacesByCoor, findNearbyPlacesByName
 
 
 
@@ -71,10 +72,64 @@ def authenticate_user(request):
 
 # ####################
 
-# # for frontend ItineraryView.js: create  itinerary 
+# for frontend ItineraryView.js: create  itinerary 
+@itinerary_routes.route("/itinerary", methods=["POST"])
+def generate_itinerary():
+    if request.method == 'POST':
+        pref = request.get_json()
+        
+        
+        
+        events
+        if (pref['specificDestination']):
+            events = findNearbyPlacesByName(pref['destination'])
+        else: 
+            # TODO: determine place when none speicfied
+            place = "paris"
+            events = findNearbyPlacesByName(place)
+            
+        # TODO: ai integration - takes user pref and nearby places
+            
+# for reference, trip details inputted by user: 
 
-#     ## integrated later, once google places api done
+    # const NewTrip = ({ user }) => {
+    #   const navigate = useNavigate();
+    #   const [currentStep, setCurrentStep] = useState(1);
+    #   const [isGenerating, setIsGenerating] = useState(false);
+    #   const [formData, setFormData] = useState({
+    #     // Step 1: Basic Info
+    #     destination: '',
+    #     specificDestination: false,
+    #     startDate: '',
+    #     endDate: '',
+    #     travelers: 1,
+        
+    #     // Step 2: Preferences
+    #     budget: 'medium',
+    #     accommodation: 'hotel',
+    #     activityLevel: 'moderate',
+    #     interests: [],
+        
+    #     // Step 3: Additional Info
+    #     dietaryRestrictions: [],
+    #     accessibilityNeeds: [],
+    #     languagePreference: 'english',
+    #     specialRequests: '',
+    #   });
+    
+# # for frontend ItineraryView.js: get itineraries for user
+# @itinerary_routes.route("/itineraries", methods=["GET"])
+# def get_user_itineraries():
+#     user_id, error = authenticate_user(request)
+#     if error:
+#         return error
+    
+#     itineraries = list(mongo.db.itineraries.find({"user_id": user_id}, {"_id": 1, "name": 1, "destination": 1, "startDate": 1, "endDate": 1}))
 
+#     for itinerary in itineraries:
+#         # convert ObjectId to string (JSON)
+#         itinerary["_id"] = str(itinerary["_id"])
+#     return jsonify(itineraries), 200
 
 # # for frontend ItineraryView.js: edit existing itinerary 
 
