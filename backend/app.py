@@ -8,18 +8,20 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 from flask_socketio import SocketIO
 from dotenv import load_dotenv # secure mongoDB uri
-from user_routes import user_routes
-from itinerary_routes import itinerary_routes
+from routes.user_routes import user_routes
+from routes.itinerary_routes import itinerary_routes
 import os
 
 # load env variable from .env
 load_dotenv() 
+print("MONGO_URI from .env:", os.getenv("MONGO_URI"))  # Debugging
 
 # flask app, CORS, and PyMongo init
 app = Flask(__name__) # create instance of flask
-app.secret_key = "your_secret_key"                  #### probably need to come back and fix this
+#app.secret_key = "your_secret_key"                  #### probably need to come back and fix this
 app.config["MONGO_URI"] = os.getenv("MONGO_URI") # configure mongoDB connection
 mongo = PyMongo(app)
+app.extensions["pymongo"] = mongo ## mongoDB initialization!
 CORS(app)
 
 # assign mongo to route files
@@ -32,6 +34,12 @@ app.register_blueprint(itinerary_routes)
 
 
 
+### test!!
+
+print("MongoDB URI:", os.getenv("MONGO_URI"))  # Debugging
+print("Connected to MongoDB Database:", mongo.db.name if mongo else "Mongo is None")
+
+######
 
 # route definition
 @app.route("/")
