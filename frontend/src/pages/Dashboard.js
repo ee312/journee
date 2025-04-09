@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import TripCard from '../components/TripCard';
-//import emptyStateImage from '../assets/empty-state.svg';
+//import suitcase from '../assets/suitcase.svg';
 
 const Dashboard = ({ user }) => {
   const [trips, setTrips] = useState([]);
@@ -145,7 +145,7 @@ const Dashboard = ({ user }) => {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
-            {/* <img src={emptyStateImage} alt="No trips found" className="w-48 h-auto mb-6" /> */}
+            {/* <img src={suitcase} alt="" className="w-48 h-auto mb-6" /> */}
             <h3 className="text-lg font-medium text-gray-900">No trips found</h3>
             <p className="mt-2 text-gray-600">
               {activeTab === 'all'
@@ -160,7 +160,7 @@ const Dashboard = ({ user }) => {
               to="/new-trip"
               className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
             >
-              Plan Your First Trippppppppppppppp
+              Plan Your First Trip
             </Link>
           </div>
         )}

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-//import heroImage from '../assets/hero-image.jpg';
-//import featureIcon1 from '../assets/feature-icon1.svg';
-//import featureIcon2 from '../assets/feature-icon2.svg';
-//import featureIcon3 from '../assets/feature-icon3.svg';
+import suitcase from '../assets/suitcase.svg';
+import featureIcon1 from '../assets/feature-icon1.png';
+import featureIcon2 from '../assets/feature-icon2.png';
+import featureIcon3 from '../assets/feature-icon3.png';
 
 const Home = () => {
   return (
@@ -39,7 +39,7 @@ const Home = () => {
               <div className="relative rounded-lg shadow-xl overflow-hidden">
                 <img
                   className="w-full h-auto"
-                //   src={heroImage}
+                  src={suitcase}
                   alt="Travel Planning"
                 />
               </div>
@@ -60,7 +60,7 @@ const Home = () => {
           <div className="mt-12 grid gap-8 md:grid-cols-3">
             <div className="bg-white rounded-lg p-6 text-center">
               <div className="flex justify-center">
-                {/* <img src={featureIcon1} alt="Input Preferences" className="h-16 w-16" /> */}
+                <img src={featureIcon1} alt="Input Preferences" className="h-20 w-20" />
               </div>
               <h3 className="mt-4 text-xl font-bold text-gray-900">Input Your Preferences</h3>
               <p className="mt-2 text-base text-gray-600">
@@ -70,7 +70,7 @@ const Home = () => {
 
             <div className="bg-white rounded-lg p-6 text-center">
               <div className="flex justify-center">
-                {/* <img src={featureIcon2} alt="AI Recommendations" className="h-16 w-16" /> */}
+                <img src={featureIcon2} alt="AI Recommendations" className="h-20 w-25" />
               </div>
               <h3 className="mt-4 text-xl font-bold text-gray-900">AI Generates Recommendations</h3>
               <p className="mt-2 text-base text-gray-600">
@@ -80,7 +80,7 @@ const Home = () => {
 
             <div className="bg-white rounded-lg p-6 text-center">
               <div className="flex justify-center">
-                {/* <img src={featureIcon3} alt="Explore and Edit" className="h-16 w-16" /> */}
+                <img src={featureIcon3} alt="Explore and Edit" className="h-20 w-20" />
               </div>
               <h3 className="mt-4 text-xl font-bold text-gray-900">Explore and Edit</h3>
               <p className="mt-2 text-base text-gray-600">
