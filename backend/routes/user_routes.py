@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_pymongo import PyMongo
 import jwt
-from datetime import datetime, timedelta, UTC
 import os
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
@@ -41,13 +40,11 @@ def register():
     
     protect_pass = generate_password_hash(password)
 
-    # check to see if username is already taken in mongoDB
+    # check to see if username is already taken in mongoDB. if user exists already, find another. otherwise, put user into database
     existingUser = mongo.db.users.find_one({"username": username})
 
-    # if user exists already, find another
     if existingUser:
         return jsonify({"message": "user exists, find another"}), 409
-    # otherwise, put user into the database
     mongo.db.users.insert_one({"username": username, "password": protect_pass})
     return jsonify({"message": "new user registered"}), 201
 
@@ -67,8 +64,8 @@ def login():
 
     # check if user and pass exists
     if userData and check_password_hash(userData["password"], password):
-        token_payload = { #token expires in
-            "user_id": str(userData["_id"]),"exp": datetime.now(UTC) + timedelta(hours=1)
+        token_payload = {
+            "user_id": str(userData["_id"])
         }
         token = jwt.encode(token_payload, SECRET_KEY, algorithm="HS256")
         #print("SECRET_KEY Used in Login:", SECRET_KEY) ## debug!
@@ -93,16 +90,6 @@ def userpage():
 
     token = request.headers.get("Authorization")
 
-    # user_id, error_response = authenticate_user(request) # use helper function defined above!
-    # if error_response:
-    #     return error_response
-
-    # userData = mongo.db.users.find_one({"_id": user_id}, {"password": 0})
-    # if userData:
-    #     return jsonify(userData), 200
-    # else:
-    #     return jsonify({"message": "User not found"}), 404
-
     if not token:
         return jsonify({"message": "unauthorized."}), 401
     try:
@@ -122,10 +109,6 @@ def userpage():
         else:
             return jsonify({"message": "User not found"}), 404
     
-    # error message for expired or invalid token 
-    except jwt.ExpiredSignatureError: 
-        print("Error: Token has expired")
-        return jsonify({"message": "Token expired"}), 401
+    # error message for invalid token 
     except jwt.InvalidTokenError:
-        print("Error: Token is invalid")
         return jsonify({"message": "Invalid token"}), 401
