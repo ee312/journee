@@ -14,9 +14,127 @@ const ItineraryView = ({ user }) => {
   }, [id]);
   
   const fetchItinerary = () => {
-    // Simulate API call
+    // Simulate API call (testPlaces will need to be replaced with API call to get the places, rest of code remains)
     setTimeout(() => {
-      const mockItinerary = {
+    const testPlaces = {
+      "destination": "New York",
+      "places": [
+        {
+          "types": [
+            "point_of_interest"
+          ],
+          "rating": 4.0,
+          "displayName": {
+            "text": "attraction1"
+          },
+          "predictedRating": 4.9,
+        },
+        {
+          "types": [
+            "activity"
+          ],
+          "rating": 4.2,
+          "displayName": {
+            "text": "activity1"
+          },
+          "predictedRating": 4.8,
+        },
+        {
+          "types": [
+            "food"
+          ],
+          "rating": 3.9,
+          "displayName": {
+            "text": "restaurant1"
+          },
+          "predictedRating": 4.6,
+        },
+        {
+          "types": [
+            "food"
+          ],
+          "rating": 4.2,
+          "displayName": {
+            "text": "restaurant2"
+          },
+          "predictedRating": 4.5,
+        },
+        {
+          "types": [
+            "stay"
+          ],
+          "rating": 4.2,
+          "displayName": {
+            "text": "hotel1"
+          },
+          "predictedRating": 4.4,
+        },
+      ],
+    };
+
+    // 1 food location and 2 other locations (points of interest, activities, etc) are scheduled for each day.
+    let nuFood = 0;
+    let nuVisits = 0;
+    // 1 stay is chosen for the trip
+    let nuStays = 0;
+    let stayPlace = ""
+
+    // seperate food, other places, and the accomodation
+    let foodPlaces = [];
+    let otherPlaces = [];
+
+    testPlaces.places.forEach(addPlace);
+
+    function addPlace(place){
+      if (place.types.includes("food")) {
+        nuFood++;
+        foodPlaces.push(place);
+      }
+      else if (place.types.includes("stay") && nuStays == 0) {
+        nuStays = 1;
+        stayPlace = place.displayName.text;
+      }
+      else if (!place.types.includes("stay")) {
+        nuVisits++;
+        otherPlaces.push(place);
+      }
+    }
+
+    const nuDays = Math.min(nuFood, (nuVisits - nuVisits%2)/2);
+
+    // allocate places to each day
+    let dailyItinerary = {
+      destination: testPlaces.destination,
+      accommodation: stayPlace,
+      days: [],
+    };
+
+    for(let i = 0; i < nuDays; i++){
+      let thisDay = {
+        day: i+1,
+        activities: [
+          {
+            id: '' + (i*3 + 1),
+            name: otherPlaces[i*2].displayName.text,
+            type: 'attraction/activity'
+          },
+          {
+            id: '' + (i*3 + 2),
+            name: otherPlaces[i*2 + 1].displayName.text,
+            type: 'attraction/activity'
+          },
+          {
+            id: '' + (i*3 + 3),
+            name: foodPlaces[i].displayName.text,
+            type: 'restaurant'
+          },
+        ],
+      };
+      dailyItinerary.days.push(thisDay);
+    }
+    
+    
+    /*  const mockItinerary = {
         id,
         destination: 'Paris, France',
         startDate: '2025-06-15',
@@ -101,9 +219,9 @@ const ItineraryView = ({ user }) => {
           },
           // additional days added here
         ],
-      };
+        }; */
       
-      setItinerary(mockItinerary);
+      setItinerary(dailyItinerary);
       setIsLoading(false);
     }, 1000);
   };
@@ -129,10 +247,11 @@ const ItineraryView = ({ user }) => {
     );
   }
   
-  const formatDate = (dateString) => {
+  // kept this in case we want to add dates
+ /* const formatDate = (dateString) => {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  }; */
   
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -152,10 +271,10 @@ const ItineraryView = ({ user }) => {
           </div>
         </div>
         <div className="mt-2 flex flex-wrap items-center text-blue-100 text-sm">
-          <div className="mr-6 flex items-center">
+    {/*   <div className="mr-6 flex items-center">
             <i className="far fa-calendar-alt mr-1"></i>
             <span>{formatDate(itinerary.startDate)} - {formatDate(itinerary.endDate)}</span>
-          </div>
+          </div> */}
           <div className="mr-6 flex items-center">
             <i className="fas fa-bed mr-1"></i>
             <span>{itinerary.accommodation}</span>
@@ -181,7 +300,7 @@ const ItineraryView = ({ user }) => {
                 }`}
                 onClick={() => setActiveDay(index)}
               >
-                Day {day.day}: {new Date(day.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                Day {day.day} {/*:  {new Date(day.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} */}
               </button>
             ))}
           </div>
@@ -190,7 +309,7 @@ const ItineraryView = ({ user }) => {
         <div className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
-              Day {itinerary.days[activeDay].day}: {formatDate(itinerary.days[activeDay].date)}
+              Day {itinerary.days[activeDay].day} {/*: {formatDate(itinerary.days[activeDay].date)} */}
             </h2>
             <div className="flex space-x-2">
               <button 
@@ -213,25 +332,24 @@ const ItineraryView = ({ user }) => {
           <div className="space-y-6">
             {itinerary.days[activeDay].activities.map((activity) => (
               <div key={activity.id} className="flex border-l-4 border-blue-500 bg-white rounded-r-md shadow-sm p-4">
-                <div className="w-24 flex-shrink-0 text-center">
+            {/* <div className="w-24 flex-shrink-0 text-center">
                   <div className="text-sm font-medium text-gray-900">{activity.time}</div>
                   <div className="text-xs text-gray-500">{activity.duration}</div>
-                </div>
-                
+                </div> */}
                 <div className="flex-1 ml-4">
                   <div className="flex items-center">
                     <h3 className="text-lg font-medium text-gray-900">{activity.name}</h3>
                     <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      activity.type === 'attraction' ? 'bg-purple-100 text-purple-800' :
+                      activity.type === 'attraction/activity' ? 'bg-purple-100 text-purple-800' :
                       activity.type === 'restaurant' ? 'bg-green-100 text-green-800' :
                       'bg-blue-100 text-blue-800'
                     }`}>
-                      {activity.type === 'attraction' ? 'Attraction' :
+                      {activity.type === 'attraction/activity' ? 'Attraction/Activity' :
                        activity.type === 'restaurant' ? 'Restaurant' : 'Activity'}
                     </span>
                   </div>
                   
-                  <div className="mt-1 text-sm text-gray-600">
+            {/*   <div className="mt-1 text-sm text-gray-600">
                     <div className="flex items-center mb-1">
                       <i className="fas fa-map-marker-alt text-gray-400 mr-1"></i>
                       <span>{activity.location}</span>
@@ -243,7 +361,7 @@ const ItineraryView = ({ user }) => {
                         <span>{activity.notes}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
                 </div>
                 
                 <div className="ml-4 flex-shrink-0">
