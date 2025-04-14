@@ -12,7 +12,6 @@ const Footer = () => {
           <div className="xl:col-span-1">
             <div className="flex items-center">
               <img className="h-8 w-auto mr-2" src={logo} alt="Journee Logo" />
-              <span className="text-xl font-bold">Journee</span>
             </div>
             <p className="mt-4 text-gray-300 text-sm">
               Simplifying travel planning with AI-powered personalized itineraries.

@@ -27,27 +27,16 @@ const NewTrip = ({ user }) => {
   });
   
   const interestOptions = [
-    'Art & Culture',
-    'Food & Dining',
-    'Nature & Outdoors',
-    'History & Heritage',
-    'Shopping',
-    'Adventure & Sports',
-    'Relaxation & Wellness',
-    'Nightlife & Entertainment',
-    'Family Friendly',
-    'Local Experiences',
+    'Amusement Parks',
+    'Hiking trails',
+    'Swimming',
   ];
   
   const dietaryOptions = [
     'Vegetarian',
     'Vegan',
-    'Gluten-Free',
-    'Dairy-Free',
-    'Nut Allergies',
     'Halal',
-    'Kosher',
-    'None',
+    'Pescatarian',
   ];
   
   const accessibilityOptions = [
@@ -310,9 +299,9 @@ const NewTrip = ({ user }) => {
                   required
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
-                  <option value="budget">Budget/Backpacker</option>
-                  <option value="medium">Mid-Range</option>
-                  <option value="luxury">Luxury</option>
+                  <option value="budget">$</option>
+                  <option value="medium">$$</option>
+                  <option value="luxury">$$$</option>
                 </select>
               </div>
               

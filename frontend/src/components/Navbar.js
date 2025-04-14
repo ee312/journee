@@ -23,7 +23,6 @@ const Navbar = ({ isAuthenticated, onLogout, user }) => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center text-blue-600 font-bold text-xl">
               <img src={logo} alt="Journee Logo" className="h-8 w-auto mr-2" />
-              <span>Journee</span>
             </Link>
           </div>
           
