@@ -63,6 +63,7 @@ def mongo_storeRatings(user_id, selected_places):
             "source": "generatedItin"
         })
 
+#def itineraryToFormat
 #####################################################
 # ROUTES!!
 
@@ -150,6 +151,7 @@ def generate_itinerary():
     # once model is trained, select top places
     topPlaces = rankPlaces(model, user_id, googleFetch, top=5) # adjust top number!!
 
+
     # store feedback into mongoDB
     mongo_storeRatings(user_id, topPlaces)
     mongo.db.itineraries.insert_one({
@@ -161,7 +163,7 @@ def generate_itinerary():
         "places": topPlaces
     })
 
-    return jsonify({"places": topPlaces}), 200
+    return jsonify(itineraryToFormat), 200
 
 
 
