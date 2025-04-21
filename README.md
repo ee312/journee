@@ -6,45 +6,11 @@ For our tech stack, we use React.js for our front-end, Flask for our back-end, a
 
 ---
 
-# how our project works
-We use a three-tier architecture. We also use dot_env to secure our MonogDB URI, and some security imports as well for password security.
+# how to run the project
 
-A little bit about how our project is structured: 
+We have a requirements.txt file for dependencies for the backend
 
-
-**Front-end (top tier)**
-
-* Sends API request to back-end mediator 
-
-* Uses websocket to update generated itinerary 
-
-* Displays final itinerary on user page 
-
-
-**Back-end Mediator (middle tier)**
-
-* Accepts incoming requests
- 
-* Handle authentication
-
-* Assign each request unique tracking ID
-
-* fetch data (call API) 
-
-* incorporate AI (use Surprise to generate trip) 
-
-*final assembly (combine all data) 
-
-* Return final itinerary back to front-end 
-
- 
-
-**Data Tier (bottom tier)**
-
-* Fetch data  
-
-  * Google Places API 
-
-  * MongoDB 
-
-* Send data to backend mediator 
+for compatibility issues, create a virtual env:
+ `conda create -n journee-env python=3.10
+ conda activate journee-env
+ pip install -r requirements.txt `
