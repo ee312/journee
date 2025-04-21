@@ -7,108 +7,97 @@ import os
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
 
-# load key from .env file
-load_dotenv()
+load_dotenv() # load key from .env file
 SECRET_KEY = os.getenv("SECRET_KEY", "key") 
-
-# use blueprint to make routes modular
-user_routes = Blueprint("user_routes", __name__)
-
-# mongo is initialized in app.py
-mongo = None
+user_routes = Blueprint("user_routes", __name__) # use blueprint to make routes modular
+mongo = None # mongo is initialized in app.py
 
 
+#####################################################    
+# HELPER FUNCTION!
+
+def authenticateUser(request): 
+    #Extract user ID from the JWT token in headers
+    token = request.headers.get("Authorization")
+    if not token:
+        return None, jsonify({"message": "Unauthorized"}), 400
+    try:
+        extracted = token.split(" ")[1]
+        decoded = jwt.decode(extracted, SECRET_KEY, algorithms=["HS256"])
+        return ObjectId(decoded["user_id"]), None
+    except jwt.InvalidTokenError as e:
+        print("JWT Decode error:" ,e)
+        return None, jsonify({"message": "Invalid token"}), 403
+    
+
+
+#####################################################    
+# ROUTES!
 
 @user_routes.route("/register", methods =["POST"])
 def register():
 
-    mongo = current_app.extensions["pymongo"]
-
-    ## TESTER
-
-    #print("Mongo in user_routes:", mongo)  # Debugging line
+    mongo = current_app.extensions["pymongo"] # have to add this in every route or it doesn't work
     if mongo is None:  
-        return jsonify({"message": "MongoDB is not initialized in user_routes"}), 500  
-    ##
-    
+        return jsonify({"message": "MongoDB not initialized in user_routes"}), 500  # internal server error
+
     data = request.json # get frontend data (JSON format)
     username = data.get("user")
     password = data.get("password")
 
     if not (username and password): # error, not all fields inputted
-        return jsonify({"message": "not all fields inputted"}), 400
+        return jsonify({"message": "not all fields inputted"}), 400 # user error
     
-    protect_pass = generate_password_hash(password)
+    securePassword = generate_password_hash(password) # generate protection (extra security)
+    existingUser = mongo.db.users.find_one({"username": username})  # check to see if username is already taken in mongoDB ("users" collection)
 
-    # check to see if username is already taken in mongoDB. if user exists already, find another. otherwise, put user into database
-    existingUser = mongo.db.users.find_one({"username": username})
+    if existingUser: # if user exists already, find another
+        return jsonify({"message": "user exists, please login or find other user."}), 400 # username conflict
+    mongo.db.users.insert_one({"username": username, "password": securePassword}) # otherwise, put user into database
+    return jsonify({"message": "new user registered"}), 200 # all good
 
-    if existingUser:
-        return jsonify({"message": "user exists, find another"}), 409
-    mongo.db.users.insert_one({"username": username, "password": protect_pass})
-    return jsonify({"message": "new user registered"}), 201
 
 
 
 @user_routes.route("/login", methods =["POST"])
 def login():
-
     mongo = current_app.extensions["pymongo"]
 
-    data = request.json
-    username = data.get("user")
-    password = data.get("password")
+    frontend = request.json # request data from frontend using JSON
+    username = frontend.get("user")
+    password = frontend.get("password")
 
-    # retrieve user data from database
-    userData = mongo.db.users.find_one({"username": username})
-
-    # check if user and pass exists
-    if userData and check_password_hash(userData["password"], password):
-        token_payload = {
-            "user_id": str(userData["_id"])
-        }
-        token = jwt.encode(token_payload, SECRET_KEY, algorithm="HS256")
+    userData = mongo.db.users.find_one({"username": username}) # retrieve user data from database
+    if userData and check_password_hash(userData["password"], password): # check if user and pass exists
+        token = jwt.encode({"user_id": str(userData["_id"])}, SECRET_KEY, algorithm="HS256") # encode token
         #print("SECRET_KEY Used in Login:", SECRET_KEY) ## debug!
 
-        return jsonify({"message": "login successful", "user": username, "token": token}), 200
+        return jsonify({"message": "login successful", "user": username, "token": token}), 200 # all good
     else:
-        return jsonify({"message": "invalid username or password"}), 401
+        return jsonify({"message": "invalid username or password"}), 401 # user error
+
+
+
 
 
 @user_routes.route("/logout", methods=["POST"])
 def logout(): # handled in front end
-
     return jsonify({"message": "logged out"}), 200
+
+
+
 
 
 @user_routes.route("/userpage", methods=["GET"])
 def userpage():
-
     mongo = current_app.extensions["pymongo"]
 
-    #print("Mongo in user_routes (userpage):", mongo)
-
-    token = request.headers.get("Authorization")
-
-    if not token:
-        return jsonify({"message": "unauthorized."}), 401
-    try:
-        extracted = token.split(" ")[1] # take the "Bearer" keyword out of the token 
-        print("extracted token:", extracted) ## debug
-        print("SECRET_KEY Used in /userpage:", SECRET_KEY)
-        decoded = jwt.decode(extracted, SECRET_KEY, algorithms=["HS256"])
-
-        #print("decoded token:", decoded) ## debug
-
-        user_id = ObjectId(decoded["user_id"])
-        #print("user id from token:", user_id)
-
-        userData = mongo.db.users.find_one({"_id": user_id}, {"password": 0})
-        if userData:
-            return jsonify(userData), 200
-        else:
-            return jsonify({"message": "User not found"}), 404
+    user_id, error = authenticateUser(request)
+    if error:
+        return error
     
-    # error message for invalid token 
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token"}), 401
+    userData = mongo.db.users.find_one({"_id": user_id}, {"password": 0})
+    if userData:
+        return jsonify(userData), 200
+    else:
+        return jsonify({"message": "User not found"}), 404 # not found

@@ -11,41 +11,34 @@ const NewTrip = ({ user }) => {
     specificDestination: false,
     startDate: '',
     endDate: '',
-    travelers: 1,
     
     // Step 2: Preferences
-    budget: 'medium',
-    accommodation: 'hotel',
-    activityLevel: 'moderate',
+    budget: '$$',
     interests: [],
-    
-    // Step 3: Additional Info
-    dietaryRestrictions: [],
-    accessibilityNeeds: [],
     languagePreference: 'english',
     specialRequests: '',
   });
   
   const interestOptions = [
     'Amusement Parks',
-    'Hiking trails',
-    'Swimming',
+    'Outdoors',
+    'Spa Day',
+    'Art',
+    'Museum', 
+    'Bowling',
+    'Shopping',
+    'Working Out',
+    'Zoo',
+    'History Buff',
+    'going out for drinks',
+    'Touristy',
+    'Gamble',
+    'Books',
+    'Sports',
+    'Aquariums',
+    'Movies',
   ];
   
-  const dietaryOptions = [
-    'Vegetarian',
-    'Vegan',
-    'Halal',
-    'Pescatarian',
-  ];
-  
-  const accessibilityOptions = [
-    'Wheelchair Access',
-    'Limited Mobility',
-    'Visual Impairment',
-    'Hearing Impairment',
-    'None',
-  ];
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -62,28 +55,6 @@ const NewTrip = ({ user }) => {
           }
         }
         setFormData({ ...formData, interests: updatedInterests });
-      } else if (name === 'dietaryRestrictions') {
-        const updatedDietary = [...formData.dietaryRestrictions];
-        if (checked) {
-          updatedDietary.push(value);
-        } else {
-          const index = updatedDietary.indexOf(value);
-          if (index > -1) {
-            updatedDietary.splice(index, 1);
-          }
-        }
-        setFormData({ ...formData, dietaryRestrictions: updatedDietary });
-      } else if (name === 'accessibilityNeeds') {
-        const updatedAccessibility = [...formData.accessibilityNeeds];
-        if (checked) {
-          updatedAccessibility.push(value);
-        } else {
-          const index = updatedAccessibility.indexOf(value);
-          if (index > -1) {
-            updatedAccessibility.splice(index, 1);
-          }
-        }
-        setFormData({ ...formData, accessibilityNeeds: updatedAccessibility });
       } else {
         setFormData({ ...formData, [name]: checked });
       }
