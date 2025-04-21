@@ -8,250 +8,31 @@ const ItineraryView = ({ user }) => {
   const [activeDay, setActiveDay] = useState(0);
   
   useEffect(() => {
-    // In a real application, you would fetch the itinerary from the API
-    // For demo purposes, we'll use mock data
-    fetchItinerary();
+    // fetch the itinerary from the API
+    fetch(`http://127.0.0.1:5050/itinerary/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setItinerary(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching itinerary:', err);
+        setIsLoading(false);
+      });
   }, [id]);
-  
-  const fetchItinerary = () => {
-    // Simulate API call (testPlaces will need to be replaced with API call to get the places, rest of code remains)
-    setTimeout(() => {
-    const testPlaces = {
-      "destination": "New York",
-      "places": [
-        {
-          "types": [
-            "point_of_interest"
-          ],
-          "rating": 4.0,
-          "displayName": {
-            "text": "attraction1"
-          },
-          "predictedRating": 4.9,
-        },
-        {
-          "types": [
-            "activity"
-          ],
-          "rating": 4.2,
-          "displayName": {
-            "text": "activity1"
-          },
-          "predictedRating": 4.8,
-        },
-        {
-          "types": [
-            "food"
-          ],
-          "rating": 3.9,
-          "displayName": {
-            "text": "restaurant1"
-          },
-          "predictedRating": 4.6,
-        },
-        {
-          "types": [
-            "food"
-          ],
-          "rating": 4.2,
-          "displayName": {
-            "text": "restaurant2"
-          },
-          "predictedRating": 4.5,
-        },
-        {
-          "types": [
-            "stay"
-          ],
-          "rating": 4.2,
-          "displayName": {
-            "text": "hotel1"
-          },
-          "predictedRating": 4.4,
-        },
-      ],
-    };
 
-    // 1 food location and 2 other locations (points of interest, activities, etc) are scheduled for each day.
-    let nuFood = 0;
-    let nuVisits = 0;
-    // 1 stay is chosen for the trip
-    let nuStays = 0;
-    let stayPlace = ""
-
-    // seperate food, other places, and the accomodation
-    let foodPlaces = [];
-    let otherPlaces = [];
-
-    testPlaces.places.forEach(addPlace);
-
-    function addPlace(place){
-      if (place.types.includes("food")) {
-        nuFood++;
-        foodPlaces.push(place);
-      }
-      else if (place.types.includes("stay") && nuStays == 0) {
-        nuStays = 1;
-        stayPlace = place.displayName.text;
-      }
-      else if (!place.types.includes("stay")) {
-        nuVisits++;
-        otherPlaces.push(place);
-      }
-    }
-
-    const nuDays = Math.min(nuFood, (nuVisits - nuVisits%2)/2);
-
-    // allocate places to each day
-    let dailyItinerary = {
-      destination: testPlaces.destination,
-      accommodation: stayPlace,
-      days: [],
-    };
-
-    for(let i = 0; i < nuDays; i++){
-      let thisDay = {
-        day: i+1,
-        activities: [
-          {
-            id: '' + (i*3 + 1),
-            name: otherPlaces[i*2].displayName.text,
-            type: 'attraction/activity'
-          },
-          {
-            id: '' + (i*3 + 2),
-            name: otherPlaces[i*2 + 1].displayName.text,
-            type: 'attraction/activity'
-          },
-          {
-            id: '' + (i*3 + 3),
-            name: foodPlaces[i].displayName.text,
-            type: 'restaurant'
-          },
-        ],
-      };
-      dailyItinerary.days.push(thisDay);
-    }
-    
-    
-    /*  const mockItinerary = {
-        id,
-        destination: 'Paris, France',
-        startDate: '2025-06-15',
-        endDate: '2025-06-22',
-        status: 'upcoming',
-        accommodation: 'Hotel Le Marais',
-        days: [
-          {
-            day: 1,
-            date: '2025-06-15',
-            activities: [
-              {
-                id: '1',
-                time: '09:00 AM',
-                name: 'Eiffel Tower Visit',
-                type: 'attraction',
-                duration: '2 hours',
-                location: 'Champ de Mars, 5 Avenue Anatole France',
-                notes: 'Book tickets in advance to avoid long lines',
-              },
-              {
-                id: '2',
-                time: '12:00 PM',
-                name: 'Lunch at Café de Flore',
-                type: 'restaurant',
-                duration: '1.5 hours',
-                location: '172 Boulevard Saint-Germain',
-                notes: 'Famous historic café, try their croque monsieur',
-              },
-              {
-                id: '3',
-                time: '02:00 PM',
-                name: 'Louvre Museum',
-                type: 'attraction',
-                duration: '3 hours',
-                location: 'Rue de Rivoli',
-                notes: 'Focus on main attractions like Mona Lisa if time is limited',
-              },
-              {
-                id: '4',
-                time: '06:00 PM',
-                name: 'Seine River Cruise',
-                type: 'activity',
-                duration: '1 hour',
-                location: 'Pont de l\'Alma',
-                notes: 'Sunset cruise recommended for best views',
-              },
-              {
-                id: '5',
-                time: '08:00 PM',
-                name: 'Dinner at Le Jules Verne',
-                type: 'restaurant',
-                duration: '2 hours',
-                location: 'Eiffel Tower, 2nd Floor',
-                notes: 'Reservation required well in advance',
-              },
-            ],
-          },
-          {
-            day: 2,
-            date: '2025-06-16',
-            activities: [
-              {
-                id: '6',
-                time: '09:30 AM',
-                name: 'Notre-Dame Cathedral',
-                type: 'attraction',
-                duration: '1.5 hours',
-                location: 'Parvis Notre-Dame',
-                notes: 'Visit the exterior and nearby areas',
-              },
-              {
-                id: '7',
-                time: '11:30 AM',
-                name: 'Latin Quarter Walking Tour',
-                type: 'activity',
-                duration: '2 hours',
-                location: 'Starting at Place Saint-Michel',
-                notes: 'Guided tour recommended for historical context',
-              },
-            ],
-          },
-          // additional days added here
-        ],
-        }; */
-      
-      setItinerary(dailyItinerary);
-      setIsLoading(false);
-    }, 1000);
-  };
-  
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-        <p className="ml-3 text-gray-600">Loading itinerary...</p>
-      </div>
-    );
+    return <div>Loading itinerary...</div>;
   }
   
   if (!itinerary) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold text-gray-900">Itinerary not found</h2>
-        <p className="mt-2 text-gray-600">The itinerary you're looking for doesn't exist or has been deleted.</p>
-        <Link to="/dashboard" className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-          Back to Dashboard
-        </Link>
+      <div>
+        <h2>Itinerary not found</h2>
+        <Link to="/dashboard">Back to Dashboard</Link>
       </div>
     );
   }
-  
-  // kept this in case we want to add dates
- /* const formatDate = (dateString) => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  }; */
   
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">

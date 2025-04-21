@@ -43,31 +43,30 @@ const Register = ({ onLogin }) => {
     setIsLoading(true);
 
     try {
-      // In a real application, you would make an API call to the backend
-      // For demo purposes, we'll simulate a successful registration
-      
-      // Simulating API call with timeout
-      setTimeout(() => {
-        // Mock user data that would come from the API
-        const userData = {
-          id: '123456',
-          name: formData.fullName,
-          email: formData.email,
-        };
-        
-        // Mock token that would come from the API
-        const token = 'mock-jwt-token';
-        
-        // Call the onLogin function passed from the App component
-        onLogin(userData, token);
-        
-        // redirect to dashboard
-        navigate('/dashboard');
-        
-        setIsLoading(false);
-      }, 1000);
+
+      const response = await fetch('http://127.0.0.1:5050/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user: formData.email,
+          password: formData.password,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        alert('Registration successful!');
+        navigate('/login');
+      } else {
+        setError(data.message || 'Registration failed. Please try again.');
+      }
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      console.error('Error during registration:', err);
+      setError('An error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -126,7 +125,7 @@ const Register = ({ onLogin }) => {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
                   value={formData.email}
