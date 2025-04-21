@@ -30,6 +30,12 @@ const NewTrip = ({ user }) => {
     'Sports',
     'Aquariums',
     'Movies',
+    'Hotel',
+    'Inn',
+    'Cottage',
+    'Bed and Breakfast',
+    'Motel',
+    'Resort',
   ];
   
   const handleChange = (e) => {
@@ -66,17 +72,22 @@ const NewTrip = ({ user }) => {
         interests: formData.interests
       };
       
-      const response = await fetch('/api/trips', {
+      const response = await fetch('http://127.0.0.1:5050/generate-itinerary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(tripData),
       });
       
       if (response.ok) {
         const data = await response.json();
-        navigate(`/itinerary/${data.id}`);
+        console.log("Received from backend:", data);
+        if (data.id) {
+          navigate(`/itinerary/${data.id}`);
+        }
+        
       } else {
         console.error('Failed to create trip');
       }

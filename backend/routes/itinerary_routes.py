@@ -122,6 +122,12 @@ def convertInterests(interests):
         "Sports": "stadium",
         "Aquariums": "aquarium",
         "Movies": "movie_theater",
+        "Hotel": "hotel",
+        "Inn": "inn",
+        "Cottage": "cottage",
+        "Bed and Breakfast": "bed_and_breakfast",
+        "Motel": "motel",
+        "Resort": "resort_hotel"
     }
 
     placeTypes = []
@@ -185,15 +191,97 @@ def generateItinerary():
     mongoStoreRatings(user_id, formatPlacesStorage) # store feedback into mongoDB
     formattedItinerary = itineraryFormatter(topPlaces, days) # format itinerary
 
-    mongo.db.itineraries.insert_one({ # store itinerary in itineraries collection before returning it
-        "user_id": user_id,
-        "destination": destination,
-        "startDate": startDate,
-        "endDate": endDate,
-        "itinerary": formattedItinerary
+    compatWithFrontend = []
+    for d in formattedItinerary["days"]:
+        activities = []
+
+        if d.get("activity"):
+            activities.append({
+                "id": f"{d['day']}-activity",
+                "name": d["activity"]["displayName"]["text"],
+                "type": "attraction/activity"
+            })
+
+        for mealType in ["breakfast", "lunch", "dinner"]:
+            meal = d.get(mealType)
+            if meal:
+                activities.append({
+                    "id": f"{d['day']}-{mealType}",
+                    "name": meal["displayName"]["text"],
+                    "type": "restaurant"
+                })
+
+        compatWithFrontend.append({
+            "day": d["day"],
+            "activities": activities
+        })
+    
+    finalItinerary = {
+    "destination": destination,
+    "accommodation": formattedItinerary["hotel"]["displayName"]["text"] if formattedItinerary["hotel"] else None,
+    "days": compatWithFrontend
+    }   
+
+    result = mongo.db.itineraries.insert_one({
+    "user_id": user_id,
+    "destination": destination,
+    "startDate": startDate,
+    "endDate": endDate,
+    "itinerary": formattedItinerary
     })
+    itinerary_id = str(result.inserted_id)
+    finalItinerary["id"] = itinerary_id
 
 
-    return jsonify(formattedItinerary), 200 # this sends back to frontend to be formatted correctly
 
+    return jsonify(finalItinerary), 200 # this sends back to frontend to be formatted correctly
+
+
+
+@itinerary_routes.route('/itinerary/<id>', methods=['GET'])
+def getItineraryById(id):
+    mongo = current_app.extensions["pymongo"]
+    try:
+        itin = mongo.db.itineraries.find_one({"_id": ObjectId(id)})
+    except:
+        return jsonify({"message": "Invalid itinerary ID"}), 400
+
+    if not itin:
+        return jsonify({"message": "Itinerary not found"}), 404
+
+    itinerary = itin.get("itinerary", {})
+
+    compatWithFrontend = []
+    for d in itinerary.get("days", []):
+        activities = []
+
+        if d.get("activity"):
+            activities.append({
+                "id": f"{d['day']}-activity",
+                "name": d["activity"]["displayName"]["text"],
+                "type": "attraction/activity"
+            })
+
+        for mealType in ["breakfast", "lunch", "dinner"]:
+            meal = d.get(mealType)
+            if meal:
+                activities.append({
+                    "id": f"{d['day']}-{mealType}",
+                    "name": meal["displayName"]["text"],
+                    "type": "restaurant"
+                })
+
+        compatWithFrontend.append({
+            "day": d["day"],
+            "activities": activities
+        })
+    
+    result = {
+    "id": str(itin["_id"]),   
+    "destination": itin["destination"],
+    "accommodation": itinerary.get("hotel", {}).get("displayName", {}).get("text", None),
+    "days": compatWithFrontend
+    }  
+
+    return jsonify(result), 200
 
