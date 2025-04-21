@@ -29,7 +29,7 @@ const ItineraryView = ({ user }) => {
     return (
       <div>
         <h2>Itinerary not found</h2>
-        <Link to="/dashboard">Back to Dashboard</Link>
+        <Link to="/profile">Back to Profile</Link>
       </div>
     );
   }

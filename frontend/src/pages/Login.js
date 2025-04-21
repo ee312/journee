@@ -38,7 +38,7 @@ const Login = ({ onLogin }) => {
         alert('Login successful!');
         localStorage.setItem('token', data.token); // Store JWT
         onLogin(data.user, data.token);
-        navigate('/dashboard');
+        navigate('/profile');
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
       }
