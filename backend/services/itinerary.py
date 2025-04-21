@@ -1,37 +1,55 @@
 # ai itinerary generation
 # install pip install scikit-surprise
-from surprise import SVD, Dataset, Reader
+from surprise import SVD, Dataset, Reader, KNNBasic
 import pandas as pd
 
-
+# train ai model
 def trainModel(user_id, surpriseData, pastData = None):
-    combineData = (pastData or []) + surpriseData
-    df = pd.DataFrame(combineData, columns=["user_id", "place_id", "rating"])
+    combineData = (pastData or []) + surpriseData # combine past and current data
+    df = pd.DataFrame(combineData, columns=["user_id", "place_id", "rating"]) # create a pandas dataframe for training
+    reader = Reader(rating_scale = (1, 5)) # retrieve the dataset
+    data = Dataset.load_from_df(df, reader)
 
-    # import dataset
-    reader = Reader(rating_scale = (1, 5))
-    dataset = Dataset.load_from_df(df, reader)
-
-    # add logic for training the ai model
-    model = SVD()
-    trainset = dataset.build_full_trainset()
+    model = SVD() # logic for training the ai model
+    trainset = data.build_full_trainset()
     model.fit(trainset)
 
     return model
 
 
-def rankPlaces(model, user_id, googleFetch, top = 5): # may need to change top somehow to be adjustable.
+def rankPlaces(model, user_id, apiCall):
 
     # once model is trained, select top places
-    surprisePlaces = googleFetch.get("places", []) # getting places from google places api
+    surprisePlaces = apiCall.get("places", []) # getting places from previous api call
     scorePlaces = []
 
+    category = { # create categories so it's easier later
+        "hotel": [],
+        "breakfast": [],
+        "lunch": [],
+        "dinner": [],
+        "activity": []
+    }
+
     for p in surprisePlaces: # loop through place and ask surprise to predict how much user likes a place 
-        place_id = p["displayName"]["text"]
+        
+        place_id = p.get("place_id")
+        categoryClass = p.get("category")
+
         prediction = model.predict(str(user_id), place_id)
         p["predictedRating"] = prediction.est # est = estimated rating sent back from surprise
-        scorePlaces.append(p)
+        
+        if categoryClass == "hotel": # using stuff from getting surprise ready function in placesAPI, append to categories
+            category["hotel"].append(p)
+        elif categoryClass == "breakfast":
+            category["breakfast"].append(p)
+        elif categoryClass == "restaurant":
+            category["lunch"].append(p)
+            category["dinner"].append(p)
+        else:
+            category["activity"].append(p)
 
-    finalPlaces = sorted(scorePlaces, key=lambda x: x["predictedRating"], reverse=True) # sort high to low
+    for c in category:
+        category[c] = sorted(category[c], key=lambda x: x["predictedRating"], reverse=True) # sort high to low
 
-    return finalPlaces[:top]
+    return category

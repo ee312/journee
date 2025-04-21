@@ -4,12 +4,13 @@ from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from surprise import SVD, Dataset, Reader
 from dotenv import load_dotenv
+from datetime import datetime
 import jwt
 import os
 import pandas as pd
 from services.placesAPI import findNearbyPlacesByName, prepareSurpriseData
 from services.itinerary import trainModel, rankPlaces
-
+from user_routes import authenticateUser # import from user_routes because we need it here
 
 # load key from .env file
 load_dotenv()
@@ -22,34 +23,17 @@ itinerary_routes = Blueprint("itinerary_routes", __name__)
 mongo = None
 
 
-
-
 #####################################################    
-#HELPER FUNCTIONS!!!
-
-# helper authentication function
-def authenticate_user(request): 
-    #Extract user ID from the JWT token in headers
-    token = request.headers.get("Authorization")
-    if not token:
-        return None, jsonify({"message": "Unauthorized"}), 401
-
-    extracted = token.split(" ")[1]
-    try:
-        decoded = jwt.decode(extracted, SECRET_KEY, algorithms=["HS256"])
-        return ObjectId(decoded["user_id"]), None
-    except jwt.InvalidTokenError:
-        return None, jsonify({"message": "Invalid token"}), 401
-    
+#HELPER FUNCTION!
 
 # helper function to save rating for surprise library things (in user_ratings database collection!)
-def mongo_storeRatings(user_id, selected_places):
+def mongoStoreRatings(user_id, selected_places):
 
     # need to do this or you get an error, idk why but it wouldn't work without it
     mongo = current_app.extensions["pymongo"]
 
     if mongo is None:  
-        return jsonify({"message": "MongoDB is not initialized in itinerary_routes"}), 500  
+        return jsonify({"message": "mongo  not initialized"}), 500  
     
     col = mongo.db.user_ratings
 
@@ -63,131 +47,116 @@ def mongo_storeRatings(user_id, selected_places):
             "source": "generatedItin"
         })
 
-#def itineraryToFormat
-#####################################################
-# ROUTES!!
+# helper function to calculate number of days in trip
+def totalDays(startDate, endDate):
+    dateFormat = "%Y-%m-%d" # calculate total number of days for itinerary generation
+    firstDay = datetime.strptime(startDate, dateFormat)
+    lastDay = datetime.strptime(endDate, dateFormat)
+    return (lastDay - firstDay).days + 1
 
 
-# # for frontend ItineraryView.js: get itineraries for user
-# @itinerary_routes.route("/itineraries", methods=["GET"])
-# def get_user_itineraries():
-#     user_id, error = authenticate_user(request)
-#     if error:
-#         return error
+# helper function to format itinerary
+def itineraryFormatter(topPlaces, days):
+
+    itinerary = [] # create itinerary and store daily
+    if len(topPlaces["hotel"]) > 0:
+        hotel = topPlaces["hotel"][0]
+    else:
+        hotel = None
+
+    for d in range(days): # loop through days for daily plan
+        dailyPlan = {}
+        
+        dailyPlan["day"] = d+1
+
+        #breakfast
+        if len(topPlaces["breakfast"]) > 0: # pick breakfast place
+            index = d % len(topPlaces["breakfast"]) # avoid out of bounds problem, had to add this in so it wraps around
+            dailyPlan["breakfast"] = topPlaces["breakfast"][index]
+        else:
+            dailyPlan["breakfast"] = None
+        #lunch
+        if len(topPlaces["lunch"]) > 0: 
+            index = d % len(topPlaces["lunch"]) 
+            dailyPlan["lunch"] = topPlaces["lunch"][index]
+        else:
+            dailyPlan["lunch"] = None
+        # dinner
+        if len(topPlaces["dinner"]) > 0:  
+            index = d % len(topPlaces["dinner"]) 
+            dailyPlan["dinner"] = topPlaces["dinner"][index]
+        else:
+            dailyPlan["dinner"] = None
+        # activity
+        if len(topPlaces["activity"]) > 0:  
+            index = d % len(topPlaces["activity"]) 
+            dailyPlan["activity"] = topPlaces["activity"][index]
+        else:
+            dailyPlan["activity"] = None
+
+        itinerary.append(dailyPlan)
     
-#     itineraries = list(mongo.db.itineraries.find({"user_id": user_id}, {"_id": 1, "name": 1, "destination": 1, "startDate": 1, "endDate": 1}))
-
-#     for itinerary in itineraries:
-#         # convert ObjectId to string (JSON)
-#         itinerary["_id"] = str(itinerary["_id"])
-#     return jsonify(itineraries), 200
-
-
-# # for frontend ItineraryView.js: get itinerary by id
-# @itinerary_routes.route("/itinerary/<itinerary_id>", methods=["GET"])
-# def get_itinerary(itinerary_id):
-#     user_id, error = authenticate_user(request)
-#     if error:
-#         return error
-
-#     itinerary = mongo.db.itineraries.find_one({"_id": ObjectId(itinerary_id), "user_id": user_id})
-    
-#     if not itinerary:
-#         return jsonify({"message": "could not find itinerary"}), 404
-
-#     itinerary["_id"] = str(itinerary["_id"])
-#     return jsonify(itinerary), 200
+    return { # returns the one hotel and the daily itinerary
+        "hotel": hotel,
+        "days": itinerary
+    }
+        
+#####################################################    
+#ROUTES!
 
 
-# ####################
-
-# # for frontend ItineraryView.js: create  itinerary 
-
-#     ## integrated later, once google places api done
 @itinerary_routes.route('/generate-itinerary', methods=['POST'])
-def generate_itinerary():
+def generateItinerary():
 
-    user_id, error = authenticate_user(request)
+    user_id, error = authenticateUser(request) # authenticate user
     if error:
         return error
-    
     mongo = current_app.extensions["pymongo"]
 
-    data = request.json
+    data = request.json # this is frontend data request
     destination = data.get("destination")
     interests = data.get("interests", [])
     dietary = data.get("dietary", [])
     budget = data.get("budget")
     startDate = data.get("startDate")
     endDate = data.get("endDate")
-    numTravelers = data.get("travelers")
 
-    # add logic for grabbing places (google places api call)
-    googleFetch = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": interests}).json()
+    days = totalDays(startDate, endDate) # get total number of days
 
-    # get surprise ready
-    userPref = {
+    apiCall = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": interests}).json() # get api places only based on user interest
+
+    userPref = {  # get surprise ready
         "interest": interests,
         "budget": budget,
         "dietary": dietary
     }
-    surpriseData = prepareSurpriseData(googleFetch, userPref, str(user_id))
+    surpriseData = prepareSurpriseData(apiCall, userPref, str(user_id))
 
-
-    # add logic for combining with user_ratings database
-    col = mongo.db.user_ratings
-    pastUserData = list(col.find({"user_id": user_id}))
+    datab = mongo.db.user_ratings # combine with user_ratings database
+    pastUserData = list(datab.find({"user_id": user_id}))
     pastData = [(str(x["user_id"]), x["place_id"], x["rating"]) for x in pastUserData]
 
     currData = pastData + surpriseData # combine old and current data
-
     df = pd.DataFrame(currData, columns = ["user_id", "place_id", "rating"])
     reader = Reader(rating_scale = (1,5))
     dataset = Dataset.load_from_df(df, reader)
 
-    # add logic for training the ai model
-    model = trainModel(user_id, surpriseData, pastData)
+    model = trainModel(user_id, surpriseData, pastData) # train ai model
 
-    # once model is trained, select top places
-    topPlaces = rankPlaces(model, user_id, googleFetch, top=5) # adjust top number!!
+    topPlaces = rankPlaces(model, user_id, apiCall) # gives me places and categories
 
+    mongoStoreRatings(user_id, topPlaces) # store feedback into mongoDB
+    formattedItinerary = itineraryFormatter(topPlaces, days) # format itinerary
 
-    # store feedback into mongoDB
-    mongo_storeRatings(user_id, topPlaces)
-    mongo.db.itineraries.insert_one({
+    mongo.db.itineraries.insert_one({ # store itinerary in itineraries collection before returning it
         "user_id": user_id,
         "destination": destination,
         "startDate": startDate,
         "endDate": endDate,
-        "travelers": numTravelers,
-        "places": topPlaces
+        "itinerary": formattedItinerary
     })
 
-    return jsonify(itineraryToFormat), 200
 
-
-
-
-# # for frontend ItineraryView.js: edit existing itinerary 
-
-#     ## integrated later, once google places api done
-
-# #####################
-
-
-# # for frontend ItineraryView.js: delte existing itinerary 
-# @itinerary_routes.route("/itinerary/<itinerary_id>", methods=["DELETE"])
-# def delete_itinerary(itinerary_id):
-#     user_id, error = authenticate_user(request)
-#     if error:
-#         return error
-
-#     result = mongo.db.itineraries.delete_one({"_id": ObjectId(itinerary_id), "user_id": user_id})
-
-#     if result.deleted_count == 0:
-#         return jsonify({"message": "Itinerary not found or unauthorized"}), 404
-
-#     return jsonify({"message": "Itinerary deleted"}), 200
-
+    return jsonify(itineraryFormatter), 200 # this sends back to frontend to be formatted correctly
 
 
