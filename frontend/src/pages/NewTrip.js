@@ -61,22 +61,35 @@ const NewTrip = ({ user }) => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     try {
-      const res = await fetch('/generate-itinerary', {
+      const tripData = {
+        destination: formData.destination,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        budget: formData.budget,
+        interests: formData.interests
+      };
+      
+      const response = await fetch('/api/trips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(tripData),
       });
-
-      if (res.ok) {
-        navigate('/itinerary/new-trip-123');
+      
+      if (response.ok) {
+        const data = await response.json();
+        navigate(`/itinerary/${data.id}`);
       } else {
-        console.error('Failed to generate itinerary');
+        console.error('Failed to create trip');
       }
-    } catch (err) {
-      console.error('Error:', err);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
