@@ -37,6 +37,12 @@ const NewTrip = ({ user }) => {
     'Sports',
     'Aquariums',
     'Movies',
+    'Hotel',
+    'Inn',
+    'Cottage',
+    'Bed and Breakfast',
+    'Motel',
+    'Resort',
   ];
   
   
@@ -63,24 +69,25 @@ const NewTrip = ({ user }) => {
     }
   };
   
-  const nextStep = () => {
-    setCurrentStep(currentStep + 1);
-    window.scrollTo(0, 0);
-  };
-  
-  const prevStep = () => {
-    setCurrentStep(currentStep - 1);
-    window.scrollTo(0, 0);
-  };
-  
-  const handleGenerateItinerary = () => {
-    setIsGenerating(true);
-    
-    // make API call to generate itinerary
-    // simulate generation for demo
-    setTimeout(() => {
-      navigate('/itinerary/new-trip-123');
-    }, 3000);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/generate-itinerary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        navigate('/itinerary/new-trip-123');
+      } else {
+        console.error('Failed to generate itinerary');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
   };
   
   return (
