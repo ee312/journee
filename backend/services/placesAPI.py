@@ -25,7 +25,7 @@ def findNearbyPlacesByCoor(lat, long, radius, kwargs = {}):
     included_types = ["amusement_park", "aquarium", "art_gallery", "art_studio", "bar", "book_store", 
                           "bowling_alley", "campground", "casino", "church", "city_hall", "cultural_landmark", "historical_place"
                           "clothing_store", "electronics_store", "gym", "library", "movie_theater", "museum", "park", 
-                          "shopping_mall", "spa", "stadium", "tourist_attraction", "zoo", "restaurant", "cafe", "bakery", "lodging"]
+                          "shopping_mall", "spa", "stadium", "tourist_attraction", "zoo", "restaurant", "cafe", "bakery", "lodging", "hotel", "inn", "cottage", "bed_and_breakfast", "motel", "resort_hotel"]
     
     # excluded_types = ["hospital", "car_dealer", "car_wash", "lawyer", "bank", "accounting", 
     #                       "dentist", "insurance_agency", "moving_company", "physiotherapist", "primary_school", 
@@ -71,11 +71,12 @@ def prettyJSON(response):
 
 
 def placeClassification(placeTypes):
+    print("types for place:", placeTypes)
     if any(x in placeTypes for x in ["bakery", "cafe"]):
         return "breakfast"
     elif any (x in placeTypes for x in ["restaurant"]):
         return "restaurant"
-    elif any (x in placeTypes for x in ["lodging"]):
+    elif any (x in placeTypes for x in ["lodging", "hotel", "bed_and_breakfast", "inn", "motel", "resort_hotel"]):
         return "hotel"
     else:
         return "activity"
@@ -97,7 +98,10 @@ def prepareSurpriseData(response_json, user_preferences= "None", user_id = "newU
         placeID = x["displayName"]["text"]
         placeTypes = x.get("types", [])
         rating = x.get("rating", random.uniform(3.0,4.5)) # random rating if there's none
-        priceLevel = budgetNum.get(x.get("priceRange", "$$"), 2)
+        
+        priceDict = x.get("priceRange", {"value": "$$"}) # had to add this bc of incompatibility w dict
+        priceRange = priceDict.get("value", "$$")
+        priceLevel = budgetNum.get(priceRange, 2)
 
         if any(p in placeTypes for p in interest): # try to boost rating to bias surprise
             rating += 0.5

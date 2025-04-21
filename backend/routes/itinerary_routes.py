@@ -10,7 +10,7 @@ import os
 import pandas as pd
 from services.placesAPI import findNearbyPlacesByName, prepareSurpriseData
 from services.itinerary import trainModel, rankPlaces
-from user_routes import authenticateUser # import from user_routes because we need it here
+from routes.user_routes import authenticateUser # import from user_routes because we need it here
 
 # load key from .env file
 load_dotenv()
@@ -19,8 +19,6 @@ SECRET_KEY = os.getenv("SECRET_KEY", "key")
 # use blueprint to make routes modular
 itinerary_routes = Blueprint("itinerary_routes", __name__)
 
-# mongo is initialized in app.py
-mongo = None
 
 
 #####################################################    
@@ -38,6 +36,7 @@ def mongoStoreRatings(user_id, selected_places):
     col = mongo.db.user_ratings
 
     for place in selected_places:
+        print("place in mongoStoreRatings:", place) # debug for dict-string conversion
 
         place_id = place["displayName"]["text"]
         col.insert_one({
@@ -107,10 +106,13 @@ def itineraryFormatter(topPlaces, days):
 
 @itinerary_routes.route('/generate-itinerary', methods=['POST'])
 def generateItinerary():
-
+    print("Hit /generate-itinerary route!") #debugging
     user_id, error = authenticateUser(request) # authenticate user
     if error:
+        print("authetication failed: ", error)
         return error
+
+   # user_id = ObjectId("68065db471d4e9b655075bcf") # debug
     mongo = current_app.extensions["pymongo"]
 
     data = request.json # this is frontend data request
@@ -145,7 +147,10 @@ def generateItinerary():
 
     topPlaces = rankPlaces(model, user_id, apiCall) # gives me places and categories
 
-    mongoStoreRatings(user_id, topPlaces) # store feedback into mongoDB
+    formatPlacesStorage = [] # need to change to storage format or else it won't store in mongo
+    for s in topPlaces.values():
+        formatPlacesStorage.extend(s)
+    mongoStoreRatings(user_id, formatPlacesStorage) # store feedback into mongoDB
     formattedItinerary = itineraryFormatter(topPlaces, days) # format itinerary
 
     mongo.db.itineraries.insert_one({ # store itinerary in itineraries collection before returning it
@@ -157,6 +162,6 @@ def generateItinerary():
     })
 
 
-    return jsonify(itineraryFormatter), 200 # this sends back to frontend to be formatted correctly
+    return jsonify(formattedItinerary), 200 # this sends back to frontend to be formatted correctly
 
 

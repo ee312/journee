@@ -3,7 +3,7 @@
 # make sure you install pyjwt: pip install pyjwt
 
 # imports
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv # secure mongoDB uri
@@ -36,7 +36,8 @@ app.register_blueprint(itinerary_routes)
 
 print("MongoDB URI:", os.getenv("MONGO_URI"))  # Debugging
 print("Connected to MongoDB Database:", mongo.db.name if mongo else "Mongo is None")
+3
 
 # run flask app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="127.0.0.1", port=5050)

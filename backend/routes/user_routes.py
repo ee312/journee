@@ -21,13 +21,13 @@ def authenticateUser(request):
     token = request.headers.get("Authorization")
     if not token:
         return None, jsonify({"message": "Unauthorized"}), 400
-
-    extracted = token.split(" ")[1]
     try:
+        extracted = token.split(" ")[1]
         decoded = jwt.decode(extracted, SECRET_KEY, algorithms=["HS256"])
         return ObjectId(decoded["user_id"]), None
-    except jwt.InvalidTokenError:
-        return None, jsonify({"message": "Invalid token"}), 401
+    except jwt.InvalidTokenError as e:
+        print("JWT Decode error:" ,e)
+        return None, jsonify({"message": "Invalid token"}), 403
     
 
 
