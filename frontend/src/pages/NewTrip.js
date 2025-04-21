@@ -30,6 +30,12 @@ const NewTrip = ({ user }) => {
     'Sports',
     'Aquariums',
     'Movies',
+    'Hotel',
+    'Inn',
+    'Cottage',
+    'Bed and Breakfast',
+    'Motel',
+    'Resort',
   ];
   
   const handleChange = (e) => {

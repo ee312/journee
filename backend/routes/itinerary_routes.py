@@ -122,6 +122,12 @@ def convertInterests(interests):
         "Sports": "stadium",
         "Aquariums": "aquarium",
         "Movies": "movie_theater",
+        "Hotel": "hotel",
+        "Inn": "inn",
+        "Cottage": "cottage",
+        "Bed and Breakfast": "bed_and_breakfast",
+        "Motel": "motel",
+        "Resort": "resort_hotel"
     }
 
     placeTypes = []
