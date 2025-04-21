@@ -14,6 +14,8 @@ function App() {
   const [user, setUser] = useState(null);
   
   useEffect(() => {
+    // const token = true;
+    // const userData = true;
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
@@ -46,14 +48,14 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route 
               path="/login" 
-              element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />} 
+              element={isAuthenticated ? <Navigate to="/profile" /> : <Login onLogin={handleLogin} />} 
             />
             <Route 
               path="/register" 
-              element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register onLogin={handleLogin} />} 
+              element={isAuthenticated ? <Navigate to="/profile" /> : <Register onLogin={handleLogin} />} 
             />
             <Route 
-              path="/dashboard" 
+              path="/profile" 
               element={isAuthenticated ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />}
             />
             <Route 

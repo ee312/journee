@@ -33,9 +33,6 @@ const Navbar = ({ isAuthenticated, onLogout, user }) => {
             
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 px-3 py-2 font-medium text-sm">
-                  My Trips
-                </Link>
                 <Link to="/new-trip" className="text-gray-700 hover:text-blue-600 px-3 py-2 font-medium text-sm">
                   Plan a Trip
                 </Link>
@@ -94,13 +91,6 @@ const Navbar = ({ isAuthenticated, onLogout, user }) => {
           
           {isAuthenticated ? (
             <>
-              <Link 
-                to="/dashboard" 
-                className="text-gray-700 hover:bg-gray-100 block px-3 py-2 text-base font-medium"
-                onClick={() => setMenuOpen(false)}
-              >
-                My Trips
-              </Link>
               <Link 
                 to="/new-trip" 
                 className="text-gray-700 hover:bg-gray-100 block px-3 py-2 text-base font-medium"
