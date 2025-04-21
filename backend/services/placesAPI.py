@@ -22,9 +22,9 @@ places_url = "https://places.googleapis.com/v1/places:searchNearby"
     
 def findNearbyPlacesByCoor(lat, long, radius, kwargs = {}): 
     
-    included_types = ["amusement_park", "aquarium", "art_gallery", "art_studio", "bar", "book_store", 
-                          "bowling_alley", "campground", "casino", "church", "city_hall", "cultural_landmark", "historical_place"
-                          "clothing_store", "electronics_store", "gym", "library", "movie_theater", "museum", "park", 
+    included_types = ["amusement_park", "aquarium", "art_gallery", "bar", "book_store", 
+                          "bowling_alley", "casino", "historical_place"
+                          "clothing_store", "gym", "movie_theater", "museum", "park", 
                           "shopping_mall", "spa", "stadium", "tourist_attraction", "zoo", "restaurant", "cafe", "bakery", "lodging", "hotel", "inn", "cottage", "bed_and_breakfast", "motel", "resort_hotel"]
     
     # excluded_types = ["hospital", "car_dealer", "car_wash", "lawyer", "bank", "accounting", 

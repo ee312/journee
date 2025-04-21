@@ -99,6 +99,38 @@ def itineraryFormatter(topPlaces, days):
         "hotel": hotel,
         "days": itinerary
     }
+
+
+# helper function to convert interests
+def convertInterests(interests):
+
+    interestType = { # conversion
+        "Amusement Parks": "amusement_park",
+        "Outdoors": "park",
+        "Spa Day": "spa",
+        "Art": "art_gallery",
+        "Museum": "museum",
+        "Bowling": "bowling_alley",
+        "Shopping": "shopping_mall",
+        "Working Out": "gym",
+        "Zoo": "zoo",
+        "History Buff": "historical_place",
+        "going out for drinks": "bar",
+        "Touristy": "tourist_attraction",
+        "Gamble": "casino",
+        "Books": "book_store",
+        "Sports": "stadium",
+        "Aquariums": "aquarium",
+        "Movies": "movie_theater",
+    }
+
+    placeTypes = []
+    for i in interests:
+        if i in interestType:
+            placeTypes.extend(interestType[i])
+
+    return list(set(placeTypes))
+
         
 #####################################################    
 #ROUTES!
@@ -124,8 +156,8 @@ def generateItinerary():
     endDate = data.get("endDate")
 
     days = totalDays(startDate, endDate) # get total number of days
-
-    apiCall = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": interests}).json() # get api places only based on user interest
+    convertedInterests = convertInterests(interests) # need to get interests convered from frontend to compatible google places API format
+    apiCall = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": convertedInterests}).json() # get api places only based on user interest
 
     userPref = {  # get surprise ready
         "interest": interests,
