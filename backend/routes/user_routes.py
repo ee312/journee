@@ -99,5 +99,16 @@ def userpage():
     userData = mongo.db.users.find_one({"_id": user_id}, {"password": 0})
     if userData:
         return jsonify(userData), 200
-    else:
+    if not userData:
         return jsonify({"message": "User not found"}), 404 # not found
+    
+
+    trips = list(mongo.db.itineraries.find({"user_id": user_id})) # get user's trips
+    for t in trips:
+        t["_id"] = str(t["_id"])
+        t["startDate"] = str(t.get("startDate", ""))
+        t["endDate"] = str(t.get("endDate", ""))
+
+    userData["trips"] = trips
+
+    return jsonify(userData), 200

@@ -4,7 +4,6 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import NewTrip from './pages/NewTrip';
 import ItineraryView from './pages/ItineraryView';
 import Profile from './pages/Profile';
@@ -55,7 +54,7 @@ function App() {
             />
             <Route 
               path="/dashboard" 
-              element={isAuthenticated ? <Dashboard user={user} /> : <Navigate to="/login" />} 
+              element={isAuthenticated ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />}
             />
             <Route 
               path="/new-trip" 

@@ -21,30 +21,31 @@ const Login = ({ onLogin }) => {
     setIsLoading(true);
 
     try {
-      // simulating succesful login for demo
-      // make API call to back end here
-      
-      // simulating API call with timeout
-      setTimeout(() => {
-        // mock user data that would come from the API
-        const userData = {
-          id: '123456',
-          name: 'Test User',
-          email: formData.email,
-        };
-        
-        // mock token that would come from the API
-        const token = 'mock-jwt-token';
-        
-        onLogin(userData, token);
-        
-        // redirect to dashboard once logged in
+      const response = await fetch('http://127.0.0.1:5050/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user: formData.email,
+          password: formData.password,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        alert('Login successful!');
+        localStorage.setItem('token', data.token); // Store JWT
+        onLogin(data.user, data.token);
         navigate('/dashboard');
-        
-        setIsLoading(false);
-      }, 1000);
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      console.error('Error during login:', err);
+      setError('An error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -84,7 +85,7 @@ const Login = ({ onLogin }) => {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
                   value={formData.email}

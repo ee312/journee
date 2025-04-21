@@ -20,7 +20,7 @@ app = Flask(__name__) # create instance of flask
 app.config["MONGO_URI"] = os.getenv("MONGO_URI") # configure mongoDB connection (key in .env)
 mongo = PyMongo(app) 
 app.extensions["pymongo"] = mongo # mongoDB initialization
-CORS(app) # cross-origin resource sharing, for js frontend + py backend
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # assign mongo to route files
 user_routes.mongo = mongo
