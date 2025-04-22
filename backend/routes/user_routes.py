@@ -25,8 +25,7 @@ def authenticateUser(request):
         extracted = token.split(" ")[1]
         decoded = jwt.decode(extracted, SECRET_KEY, algorithms=["HS256"])
         return ObjectId(decoded["user_id"]), None
-    except jwt.InvalidTokenError as e:
-        print("JWT Decode error:" ,e)
+    except jwt.InvalidTokenError:
         return None, jsonify({"message": "Invalid token"}), 403
     
 
@@ -70,7 +69,6 @@ def login():
     userData = mongo.db.users.find_one({"username": username}) # retrieve user data from database
     if userData and check_password_hash(userData["password"], password): # check if user and pass exists
         token = jwt.encode({"user_id": str(userData["_id"])}, SECRET_KEY, algorithm="HS256") # encode token
-        #print("SECRET_KEY Used in Login:", SECRET_KEY) ## debug!
 
         return jsonify({"message": "login successful", "user": username, "token": token}), 200 # all good
     else:
@@ -100,11 +98,10 @@ def userpage():
     if not userData:
         return jsonify({"message": "User not found"}), 404
     
-    # Get user's trips
-    trips = list(mongo.db.itineraries.find({"user_id": user_id}))
-    for t in trips:
-        t["_id"] = str(t["_id"])
-        t["startDate"] = str(t.get("startDate", ""))
+    trips = list(mongo.db.itineraries.find({"user_id": user_id})) # get user's trips
+    for t in trips: # need to pull this from compressed form in mongoDB
+        t["_id"] = str(t["_id"]) # extract mongodb's id field (ObjectId type)
+        t["startDate"] = str(t.get("startDate", "")) 
         t["endDate"] = str(t.get("endDate", ""))
 
     userData["trips"] = trips

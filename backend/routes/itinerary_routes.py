@@ -27,18 +27,14 @@ itinerary_routes = Blueprint("itinerary_routes", __name__)
 # helper function to save rating for surprise library things (in user_ratings database collection!)
 def mongoStoreRatings(user_id, selected_places):
 
-    # need to do this or you get an error, idk why but it wouldn't work without it
     mongo = current_app.extensions["pymongo"]
-
     if mongo is None:  
         return jsonify({"message": "mongo  not initialized"}), 500  
     
-    col = mongo.db.user_ratings
+    col = mongo.db.user_ratings # user ratings collection pbject
 
     for place in selected_places:
-        print("place in mongoStoreRatings:", place) # debug for dict-string conversion
-
-        place_id = place["displayName"]["text"]
+        place_id = place["displayName"]["text"] # compress format for mongoDB
         col.insert_one({
             "user_id": user_id,
             "place_id": place_id,
@@ -65,7 +61,6 @@ def itineraryFormatter(topPlaces, days):
 
     for d in range(days): # loop through days for daily plan
         dailyPlan = {}
-        
         dailyPlan["day"] = d+1
 
         #breakfast
@@ -133,8 +128,12 @@ def convertInterests(interests):
     placeTypes = []
     for i in interests:
         if i in interestType:
-            placeTypes.extend(interestType[i])
-
+            val = interestType[i]
+            if isinstance(val, list): # this was added to avoid an error where interests map to multiple types
+                placeTypes.extend(val)
+            else:
+                placeTypes.append(val)
+                
     return list(set(placeTypes))
 
         
@@ -142,16 +141,17 @@ def convertInterests(interests):
 #ROUTES!
 
 
-@itinerary_routes.route('/generate-itinerary', methods=['POST'])
+@itinerary_routes.route('/generate-itinerary', methods=['POST', 'OPTIONS'])
 def generateItinerary():
-    print("Hit /generate-itinerary route!") #debugging
+
+    if request.method == 'OPTIONS': # ddebugging
+        return jsonify({'message': 'CORS preflight okay'}), 200
+
     user_id, error = authenticateUser(request) # authenticate user
     if error:
-        print("authetication failed: ", error)
         return error
-
-   # user_id = ObjectId("68065db471d4e9b655075bcf") # debug
     mongo = current_app.extensions["pymongo"]
+
 
     data = request.json # this is frontend data request
     destination = data.get("destination")
@@ -164,7 +164,7 @@ def generateItinerary():
     days = totalDays(startDate, endDate) # get total number of days
     convertedInterests = convertInterests(interests) # need to get interests convered from frontend to compatible google places API format
     apiCall = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": convertedInterests}).json() # get api places only based on user interest
-
+    
     userPref = {  # get surprise ready
         "interest": interests,
         "budget": budget,
@@ -182,7 +182,6 @@ def generateItinerary():
     dataset = Dataset.load_from_df(df, reader)
 
     model = trainModel(user_id, surpriseData, pastData) # train ai model
-
     topPlaces = rankPlaces(model, user_id, apiCall) # gives me places and categories
 
     formatPlacesStorage = [] # need to change to storage format or else it won't store in mongo
@@ -232,8 +231,6 @@ def generateItinerary():
     itinerary_id = str(result.inserted_id)
     finalItinerary["id"] = itinerary_id
 
-
-
     return jsonify(finalItinerary), 200 # this sends back to frontend to be formatted correctly
 
 
@@ -243,7 +240,8 @@ def getItineraryById(id):
     mongo = current_app.extensions["pymongo"]
     try:
         itin = mongo.db.itineraries.find_one({"_id": ObjectId(id)})
-    except:
+    except Exception as e:
+        print("error during itinerary lookup:", str(e))
         return jsonify({"message": "Invalid itinerary ID"}), 400
 
     if not itin:
@@ -279,9 +277,19 @@ def getItineraryById(id):
     result = {
     "id": str(itin["_id"]),   
     "destination": itin["destination"],
-    "accommodation": itinerary.get("hotel", {}).get("displayName", {}).get("text", None),
+    "accommodation": (
+        itinerary.get("hotel", {}).get("displayName", {}).get("text")
+        if itinerary.get("hotel") else None
+    ),
     "days": compatWithFrontend
     }  
 
     return jsonify(result), 200
+
+@itinerary_routes.route("/debug-itinerary/<id>", methods=["GET"]) ### debugging!!!
+def debug_itin(id):
+    mongo = current_app.extensions["pymongo"]
+    doc = mongo.db.itineraries.find_one({"_id": ObjectId(id)})
+    return jsonify(doc), 200
+
 
