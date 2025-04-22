@@ -13,7 +13,7 @@ import os
 
 # load env variable from .env
 load_dotenv() 
-print("MONGO_URI from .env:", os.getenv("MONGO_URI"))  # Debugging
+
 
 # flask app, CORS, and PyMongo init
 app = Flask(__name__) # create instance of flask
@@ -34,9 +34,9 @@ app.register_blueprint(itinerary_routes)
 
 ### test!!
 
-print("MongoDB URI:", os.getenv("MONGO_URI"))  # Debugging
-print("Connected to MongoDB Database:", mongo.db.name if mongo else "Mongo is None")
-3
+# print("MongoDB URI:", os.getenv("MONGO_URI"))  # Debugging
+# print("Connected to MongoDB Database:", mongo.db.name if mongo else "Mongo is None")
+# 3
 
 # run flask app
 if __name__ == "__main__":

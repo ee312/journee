@@ -27,18 +27,14 @@ itinerary_routes = Blueprint("itinerary_routes", __name__)
 # helper function to save rating for surprise library things (in user_ratings database collection!)
 def mongoStoreRatings(user_id, selected_places):
 
-    # need to do this or you get an error, idk why but it wouldn't work without it
     mongo = current_app.extensions["pymongo"]
-
     if mongo is None:  
         return jsonify({"message": "mongo  not initialized"}), 500  
     
-    col = mongo.db.user_ratings
+    col = mongo.db.user_ratings # user ratings collection pbject
 
     for place in selected_places:
-        print("place in mongoStoreRatings:", place) # debug for dict-string conversion
-
-        place_id = place["displayName"]["text"]
+        place_id = place["displayName"]["text"] # compress format for mongoDB
         col.insert_one({
             "user_id": user_id,
             "place_id": place_id,
@@ -65,7 +61,6 @@ def itineraryFormatter(topPlaces, days):
 
     for d in range(days): # loop through days for daily plan
         dailyPlan = {}
-        
         dailyPlan["day"] = d+1
 
         #breakfast
@@ -134,11 +129,11 @@ def convertInterests(interests):
     for i in interests:
         if i in interestType:
             val = interestType[i]
-            if isinstance(val, list):
+            if isinstance(val, list): # this was added to avoid an error where interests map to multiple types
                 placeTypes.extend(val)
             else:
                 placeTypes.append(val)
-
+                
     return list(set(placeTypes))
 
         
@@ -152,13 +147,9 @@ def generateItinerary():
     if request.method == 'OPTIONS': # ddebugging
         return jsonify({'message': 'CORS preflight okay'}), 200
 
-    print("Hit /generate-itinerary route!") #debugging
     user_id, error = authenticateUser(request) # authenticate user
     if error:
-        print("authetication failed: ", error)
         return error
-
-   # user_id = ObjectId("68065db471d4e9b655075bcf") # debug
     mongo = current_app.extensions["pymongo"]
 
 
@@ -172,13 +163,8 @@ def generateItinerary():
 
     days = totalDays(startDate, endDate) # get total number of days
     convertedInterests = convertInterests(interests) # need to get interests convered from frontend to compatible google places API format
-    
-    print("Converted interests:", convertedInterests) # debug~!!!!
-
     apiCall = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": convertedInterests}).json() # get api places only based on user interest
-
-    print("DEBUG: Places returned by API =", apiCall.get("places", [])) # debug!!!
-
+    
     userPref = {  # get surprise ready
         "interest": interests,
         "budget": budget,
@@ -197,8 +183,6 @@ def generateItinerary():
 
     model = trainModel(user_id, surpriseData, pastData) # train ai model
     topPlaces = rankPlaces(model, user_id, apiCall) # gives me places and categories
-
-    print("DEBUG: topPlaces =", topPlaces) # debug!!!!!
 
     formatPlacesStorage = [] # need to change to storage format or else it won't store in mongo
     for s in topPlaces.values():
@@ -237,8 +221,6 @@ def generateItinerary():
     "days": compatWithFrontend
     }   
 
-    print("Formatted Itinerary Before Insert:", formattedItinerary) # debug!!!
-
     result = mongo.db.itineraries.insert_one({
     "user_id": user_id,
     "destination": destination,
@@ -248,8 +230,6 @@ def generateItinerary():
     })
     itinerary_id = str(result.inserted_id)
     finalItinerary["id"] = itinerary_id
-
-
 
     return jsonify(finalItinerary), 200 # this sends back to frontend to be formatted correctly
 
