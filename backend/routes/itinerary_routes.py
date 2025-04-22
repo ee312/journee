@@ -133,7 +133,11 @@ def convertInterests(interests):
     placeTypes = []
     for i in interests:
         if i in interestType:
-            placeTypes.extend(interestType[i])
+            val = interestType[i]
+            if isinstance(val, list):
+                placeTypes.extend(val)
+            else:
+                placeTypes.append(val)
 
     return list(set(placeTypes))
 
@@ -142,8 +146,12 @@ def convertInterests(interests):
 #ROUTES!
 
 
-@itinerary_routes.route('/generate-itinerary', methods=['POST'])
+@itinerary_routes.route('/generate-itinerary', methods=['POST', 'OPTIONS'])
 def generateItinerary():
+
+    if request.method == 'OPTIONS': # ddebugging
+        return jsonify({'message': 'CORS preflight okay'}), 200
+
     print("Hit /generate-itinerary route!") #debugging
     user_id, error = authenticateUser(request) # authenticate user
     if error:
@@ -152,6 +160,7 @@ def generateItinerary():
 
    # user_id = ObjectId("68065db471d4e9b655075bcf") # debug
     mongo = current_app.extensions["pymongo"]
+
 
     data = request.json # this is frontend data request
     destination = data.get("destination")
@@ -163,7 +172,12 @@ def generateItinerary():
 
     days = totalDays(startDate, endDate) # get total number of days
     convertedInterests = convertInterests(interests) # need to get interests convered from frontend to compatible google places API format
+    
+    print("Converted interests:", convertedInterests) # debug~!!!!
+
     apiCall = findNearbyPlacesByName(destination, 5000.0, {"includedTypes": convertedInterests}).json() # get api places only based on user interest
+
+    print("DEBUG: Places returned by API =", apiCall.get("places", [])) # debug!!!
 
     userPref = {  # get surprise ready
         "interest": interests,
@@ -182,8 +196,9 @@ def generateItinerary():
     dataset = Dataset.load_from_df(df, reader)
 
     model = trainModel(user_id, surpriseData, pastData) # train ai model
-
     topPlaces = rankPlaces(model, user_id, apiCall) # gives me places and categories
+
+    print("DEBUG: topPlaces =", topPlaces) # debug!!!!!
 
     formatPlacesStorage = [] # need to change to storage format or else it won't store in mongo
     for s in topPlaces.values():
@@ -221,6 +236,8 @@ def generateItinerary():
     "accommodation": formattedItinerary["hotel"]["displayName"]["text"] if formattedItinerary["hotel"] else None,
     "days": compatWithFrontend
     }   
+
+    print("Formatted Itinerary Before Insert:", formattedItinerary) # debug!!!
 
     result = mongo.db.itineraries.insert_one({
     "user_id": user_id,
@@ -279,9 +296,19 @@ def getItineraryById(id):
     result = {
     "id": str(itin["_id"]),   
     "destination": itin["destination"],
-    "accommodation": itinerary.get("hotel", {}).get("displayName", {}).get("text", None),
+    "accommodation": (
+        itinerary.get("hotel", {}).get("displayName", {}).get("text")
+        if itinerary.get("hotel") else None
+    ),
     "days": compatWithFrontend
     }  
 
     return jsonify(result), 200
+
+@itinerary_routes.route("/debug-itinerary/<id>", methods=["GET"]) ### debugging!!!
+def debug_itin(id):
+    mongo = current_app.extensions["pymongo"]
+    doc = mongo.db.itineraries.find_one({"_id": ObjectId(id)})
+    return jsonify(doc), 200
+
 
