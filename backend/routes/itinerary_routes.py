@@ -260,7 +260,8 @@ def getItineraryById(id):
     mongo = current_app.extensions["pymongo"]
     try:
         itin = mongo.db.itineraries.find_one({"_id": ObjectId(id)})
-    except:
+    except Exception as e:
+        print("error during itinerary lookup:", str(e))
         return jsonify({"message": "Invalid itinerary ID"}), 400
 
     if not itin:

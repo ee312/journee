@@ -39,7 +39,7 @@ const ItineraryView = ({ user }) => {
       <div className="bg-blue-600 text-white px-6 py-4">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">{itinerary.destination}</h1>
-          <div className="flex space-x-3">
+       {/*  <div className="flex space-x-3">
             <button className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-blue-50">
               <i className="fas fa-edit mr-1"></i> Edit
             </button>
@@ -49,7 +49,7 @@ const ItineraryView = ({ user }) => {
             <button className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-blue-50">
               <i className="fas fa-share-alt mr-1"></i> Share
             </button>
-          </div>
+          </div> */}
         </div>
         <div className="mt-2 flex flex-wrap items-center text-blue-100 text-sm">
     {/*   <div className="mr-6 flex items-center">
@@ -153,9 +153,9 @@ const ItineraryView = ({ user }) => {
               </div>
             ))}
             
-            <button className="w-full flex justify-center items-center py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-gray-400 hover:text-gray-800">
+         {/*   <button className="w-full flex justify-center items-center py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-gray-400 hover:text-gray-800">
               <i className="fas fa-plus mr-2"></i> Add Activity
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
