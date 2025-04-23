@@ -8,7 +8,7 @@ For our tech stack, we use React.js for our front-end, Flask for our back-end, a
 
 # how to run the project
 
-## Open two terminals
+**Open two terminals**
 
 ### In the first one:
 cd backend
