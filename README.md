@@ -8,9 +8,16 @@ For our tech stack, we use React.js for our front-end, Flask for our back-end, a
 
 # how to run the project
 
-We have a requirements.txt file for dependencies for the backend
+## Open two terminals
 
-for compatibility issues, create a virtual env:
- `conda create -n journee-env python=3.10
- conda activate journee-env
- pip install -r requirements.txt `
+### In the first one:
+cd backend
+to create: python3 -m venv venv
+to activate: source venv/bin/activate
+install requirements: pip install -r requirements.txt
+to exit: deactivate
+
+### In the second one:
+cd frontend
+npm install (Only once. You wont need to run this command every time you run the project)
+npm start
