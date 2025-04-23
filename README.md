@@ -11,13 +11,13 @@ For our tech stack, we use React.js for our front-end, Flask for our back-end, a
 **Open two terminals**
 
 ### In the first one:
-cd backend
-to create: python3 -m venv venv
-to activate: source venv/bin/activate
-install requirements: pip install -r requirements.txt
+cd backend<br/>
+to create: python3 -m venv venv<br/>
+to activate: source venv/bin/activate<br/>
+install requirements: pip install -r requirements.txt<br/>
 to exit: deactivate
 
 ### In the second one:
-cd frontend
-npm install (Only once. You wont need to run this command every time you run the project)
+cd frontend<br/>
+npm install (Only once. You wont need to run this command every time you run the project)<br/>
 npm start
